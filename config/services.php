@@ -2,6 +2,10 @@
 
 return [
 
+    'shiftrix' => [
+        'edge_secret' => env('SHIFTRIX_EDGE_SECRET'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

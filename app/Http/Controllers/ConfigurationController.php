@@ -40,6 +40,10 @@ class ConfigurationController extends Controller
 
         $recorder->record($product, $request, 'unclaimed', $started);
 
+        if (! $request->user()) {
+            $request->session()->put('url.intended', route('configuration', ['id' => $code]));
+        }
+
         return Inertia::render('Configuration/Activate', [
             'product' => $product->only(['code_id', 'variant', 'unit_type']),
             'canActivate' => (bool) $request->user(),

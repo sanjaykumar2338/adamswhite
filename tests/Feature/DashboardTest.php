@@ -16,6 +16,6 @@ class DashboardTest extends TestCase
         $user = User::factory()->create();
         $customer = Customer::create(['business_name' => 'Test', 'max_products' => 10]);
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
-        $this->actingAs($user)->get('/dashboard')->assertOk()->assertInertia(fn ($page) => $page->component('Dashboard')->where('customer.business_name', 'Test'));
+        $this->actingAs($user)->get('/saas/dashboard')->assertOk()->assertInertia(fn ($page) => $page->component('Dashboard')->where('customer.business_name', 'Test'));
     }
 }

@@ -27,6 +27,7 @@ class ActivationFlowTest extends TestCase
         $product = $this->product();
         $this->get('/configuration?id=CARD-00001')->assertOk()->assertInertia(fn ($page) => $page->component('Configuration/Activate'));
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'unclaimed']);
+        $this->assertSame(route('configuration', ['id' => 'CARD-00001']), session('url.intended'));
     }
 
     public function test_owner_can_claim_product_and_active_scan_redirects(): void
@@ -36,7 +37,7 @@ class ActivationFlowTest extends TestCase
         $customer = Customer::create(['business_name' => 'Cafe Test', 'status' => 'active', 'max_products' => 10]);
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
         $url = 'https://g.page/r/example/review';
-        $this->actingAs($user)->post('/activations', ['code_id' => $product->code_id, 'google_review_url' => $url])->assertSessionHasNoErrors();
+        $this->actingAs($user)->post('/saas/activations', ['code_id' => $product->code_id, 'google_review_url' => $url])->assertSessionHasNoErrors();
         $this->get('/configuration?id=CARD-00001')->assertRedirect($url);
         $this->assertDatabaseHas('products', ['id' => $product->id, 'customer_id' => $customer->id, 'status' => 'active']);
     }
@@ -47,6 +48,17 @@ class ActivationFlowTest extends TestCase
         $customer = Customer::create(['business_name' => 'One', 'max_products' => 10]);
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
         $this->product(['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/first/review']);
-        $this->actingAs($user)->post('/activations', ['code_id' => 'CARD-00001', 'google_review_url' => 'https://g.page/r/second/review'])->assertSessionHasErrors('code_id');
+        $this->actingAs($user)->post('/saas/activations', ['code_id' => 'CARD-00001', 'google_review_url' => 'https://g.page/r/second/review'])->assertSessionHasErrors('code_id');
+    }
+
+    public function test_invalid_google_redirect_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::create(['business_name' => 'One', 'max_products' => 10]);
+        $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
+        $this->product();
+
+        $this->actingAs($user)->post('/saas/activations', ['code_id' => 'CARD-00001', 'google_review_url' => 'https://google.com.evil.example/review'])->assertSessionHasErrors('google_review_url');
+        $this->assertDatabaseHas('products', ['code_id' => 'CARD-00001', 'status' => 'unclaimed']);
     }
 }

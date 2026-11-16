@@ -67,6 +67,12 @@ Raw IP addresses are not stored. Probable bots are retained for auditability but
 
 ## Routing and deployment dependency
 
-The exact scanned URL is on the Shopify apex domain while Laravel is intended for Namecheap. Namecheap cannot serve that path merely by pointing a subdomain at it. Before launch, select and test one of: Shopify/app-proxy forwarding for `/configuration`, an edge reverse proxy such as Cloudflare routing only that path to Laravel, or moving the complete apex origin behind a proxy. A SaaS subdomain alone would require re-encoding every physical NFC/QR product and is therefore unsuitable.
+The exact scanned URL is on the Shopify apex domain while Laravel is intended for Namecheap. Namecheap cannot serve that path merely by pointing a subdomain at it. Shopify app proxies cannot preserve the required path because Shopify restricts their first path segment to `a`, `apps`, `community`, or `tools`; Shopify also follows upstream 30x responses, which conflicts with the required direct browser redirect.
+
+The tested approach is a Cloudflare Worker in front of the existing Shopify origin. It proxies only `/configuration*`, `/saas*`, `/build/*`, and `/images/products/*` to the Namecheap Laravel origin, leaves every other storefront path on Shopify, preserves the identifier query string and request bodies, and uses manual redirect handling so Laravel's Google Review 302 reaches the scanner unchanged. Application routes live below `/saas`, preventing collisions with Shopify's `/products/*` and account paths. The Worker and its Node tests are in `infrastructure/cloudflare-worker`.
+
+This design requires the `shiftrix.io` zone to be proxied by Cloudflare; that is a later DNS change and has not been performed. The staging test must use a temporary Cloudflare hostname first. The Namecheap origin can require the shared `X-Shiftrix-Edge` header so direct requests cannot bypass the edge.
 
 Production hosting access remains required to verify PHP 8.2+, MySQL, Composer/SSH, cron, mail transport, SSL, document-root controls, queue strategy and the selected Shopify/edge route. No production settings were changed.
+
+Routing references: [Shopify app proxies](https://shopify.dev/docs/apps/build/online-store/app-proxies) and [Cloudflare Worker routes](https://developers.cloudflare.com/workers/configuration/routing/routes/).
