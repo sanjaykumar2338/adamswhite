@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+body { background: #f6f7fb; color: #11223f; }
+.brand-gradient { background: linear-gradient(135deg, #071a3b 0%, #12376a 68%, #c49a49 150%); }
+.gold-button { background: #c49a49; color: white; }
+.gold-button:hover { background: #a77c31; }

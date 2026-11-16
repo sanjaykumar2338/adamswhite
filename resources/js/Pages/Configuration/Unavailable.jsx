@@ -1,0 +1,2 @@
+import GuestLayout from '@/Layouts/GuestLayout'; import { Head } from '@inertiajs/react';
+export default function Unavailable(){return <GuestLayout><Head title="Unavailable"/><div className="text-center"><h1 className="text-2xl font-bold">Product unavailable</h1><p className="mt-3 text-slate-500">This product is temporarily unavailable. Please contact the business or SHIFTRIX support.</p></div></GuestLayout>}
