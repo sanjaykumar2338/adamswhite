@@ -53,6 +53,6 @@ class Product extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return asset('images/products/'.strtolower($this->variant).'.svg');
+        return asset('images/products/'.strtolower($this->variant).'.jpg');
     }
 }

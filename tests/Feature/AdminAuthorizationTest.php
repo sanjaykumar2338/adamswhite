@@ -12,11 +12,11 @@ class AdminAuthorizationTest extends TestCase
 
     public function test_non_admin_is_forbidden(): void
     {
-        $this->actingAs(User::factory()->create())->get('/saas/admin')->assertForbidden();
+        $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
     }
 
     public function test_admin_can_view_dashboard(): void
     {
-        $this->actingAs(User::factory()->create(['is_admin' => true]))->get('/saas/admin')->assertOk();
+        $this->actingAs(User::factory()->create(['is_admin' => true]))->get('/admin')->assertOk();
     }
 }

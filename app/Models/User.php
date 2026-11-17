@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -22,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'preferred_locale',
         'password',
         'is_admin',
         'last_login_at',
@@ -69,5 +71,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function roleFor(Customer $customer): ?string
     {
         return $this->customers()->whereKey($customer->id)->first()?->pivot?->role;
+    }
+
+    public function preferredLocale(): string
+    {
+        return $this->preferred_locale ?: 'en';
     }
 }

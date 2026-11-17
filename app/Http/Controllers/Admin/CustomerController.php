@@ -25,6 +25,6 @@ class CustomerController extends Controller
         $data['blocked_by'] = $data['status'] === 'blocked' ? $request->user()->id : null;
         $customer->update($data);
 
-        return back()->with('success', 'Customer updated.');
+        return back()->with('success', __('ui.flash.customer_updated'));
     }
 }

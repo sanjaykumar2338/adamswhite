@@ -2,7 +2,7 @@
 
 ## Requirements
 
-PHP 8.2 or newer with mbstring, openssl, PDO MySQL, tokenizer, XML, ctype, fileinfo, BCMath, GD and ZIP; MySQL 8/MariaDB 10.6+; Composer 2; Node 20+ for build (local CI is acceptable); HTTPS; SMTP; and a cron entry.
+64-bit PHP 8.2–8.4 with ctype, curl, DOM, fileinfo, filter, GD, hash, iconv, JSON, libxml, mbstring, OpenSSL, PCRE, PDO MySQL, Phar, session, SimpleXML, tokenizer, XML reader/writer, ZIP and zlib; a minimum 256 MB PHP memory limit (512 MB recommended for inventory import); MySQL 8/MariaDB 10.6+; Composer 2; HTTPS; and SMTP. Node is not required on the host because the package contains the production frontend build.
 
 ## Release
 
@@ -13,17 +13,17 @@ PHP 8.2 or newer with mbstring, openssl, PDO MySQL, tokenizer, XML, ctype, filei
 5. Run `composer install --no-dev --optimize-autoloader` and deploy the already-built frontend or run `npm ci && npm run build`.
 6. Run `php artisan migrate --force`, then `php artisan config:cache`, `route:cache`, `view:cache` and `storage:link` if public uploads are introduced.
 7. Validate and import the workbook from a private server path. Remove it from the host after the controlled import and backup.
-8. On Namecheap Shared Hosting, add cron at the permitted five-minute interval: `*/5 * * * * cd /path/to/app && /usr/local/bin/php artisan schedule:run >/dev/null 2>&1`. Confirm the account's PHP CLI path first.
+8. Do not add cron or a queue worker for the current release: the application has no scheduled tasks or queued jobs. If scheduling is added later, Namecheap Shared Hosting requires at least a five-minute interval. Confirm the account's PHP CLI path first.
 9. Smoke-test registration, verification, password reset, one unclaimed scan, one active redirect, customer/admin authorization and CSV export.
 10. Configure the reviewed Cloudflare routes only after staging acceptance, then monitor HTTP failures and redirect latency.
 
-Use a database-backed queue synchronously on restrictive shared hosting or configure a supervised worker where cPanel permits it. Rotate application, database and mail credentials after handover.
+Use `QUEUE_CONNECTION=sync` for the current staging release. Rotate application, database and mail credentials after handover.
 
 ## Namecheap compatibility
 
 Namecheap currently documents PHP 8.0–8.5, MariaDB 11.4, MySQLi, Git, SSH (enabled from cPanel), Composer installation over SSH, mod_rewrite, SSL and cPanel cron. This satisfies Laravel 12's PHP 8.2 baseline and this application's database requirements. Shared Hosting prohibits cron intervals shorter than five minutes and more than five simultaneous cron jobs, so Laravel's conventional one-minute scheduler entry must not be used there.
 
-Before upload, verify the actual purchased account has PHP 8.2+, `ctype`, `curl`, `dom`, `fileinfo`, `filter`, `hash`, `mbstring`, `openssl`, `pcre`, `PDO`, `pdo_mysql`, `session`, `tokenizer`, `xml`, `zip` and sufficient memory. Build frontend assets before upload; production does not require Node. Hosting-account access is still needed to verify these account-specific settings.
+Before upload, run `php deployment/staging/check-hosting.php` through the selected CLI PHP binary. The 31,500-row import passes locally at 256 MB and fails at 128 MB, so 256 MB is a hard minimum and 512 MB is recommended. Hosting-account access is still needed to verify the account-specific settings.
 
 Official hosting references checked for this audit:
 
@@ -35,10 +35,12 @@ Official hosting references checked for this audit:
 ## Safe staging sequence
 
 1. Create `staging-app.shiftrix.io` in Namecheap with a separate database and document root pointing to `public/`. Do not change `shiftrix.io` DNS or Shopify.
-2. Deploy the reviewed commit, configure `APP_ENV=staging`, `APP_DEBUG=false`, staging SMTP, a unique `APP_KEY`, `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`, and a strong `SHIFTRIX_EDGE_SECRET`.
+2. Deploy the reviewed commit, configure `APP_ENV=staging`, `APP_DEBUG=false`, the staging `APP_URL`, `SHIFTRIX_TUTORIAL_URL`, staging SMTP, a unique `APP_KEY`, `SESSION_SECURE_COOKIE=true`, and `SESSION_ENCRYPT=true`. Leave `SHIFTRIX_EDGE_SECRET` empty for direct app testing; it protects only `/configuration` when edge testing begins.
 3. Run migrations, caches, the dry-run inventory validation, and then a staging-only import. Never upload the XLSX beneath a public document root.
-4. Smoke-test the origin using the edge header from a private test client. Confirm direct origin requests without that header return 403.
+4. Smoke-test Shiftrix Track directly at `/?id=CODE_ID`. When edge testing is approved, set the shared secret and confirm `/configuration` rejects requests without the edge header while normal app routes remain accessible.
 5. Deploy the Worker to a temporary Cloudflare test hostname with `SHIFTRIX_ORIGIN=https://staging-app.shiftrix.io` and the matching secret. Run the route tests and full browser acceptance there.
-6. Obtain sign-off and a rollback window. Only then plan the Cloudflare zone/DNS cutover and four scoped Worker routes described in `infrastructure/cloudflare-worker/wrangler.example.jsonc`.
+6. Obtain sign-off and a rollback window. Only then plan the single scoped `/configuration*` Cloudflare Worker route described in `infrastructure/cloudflare-worker/wrangler.example.jsonc`.
+
+The complete cPanel action list and exact commands are in `docs/NAMECHEAP-STAGING-CHECKLIST.md`.
 
 The production edge design follows [Cloudflare Worker route matching](https://developers.cloudflare.com/workers/configuration/routing/routes/). Shopify's documented [app-proxy constraints](https://shopify.dev/docs/apps/build/online-store/app-proxies) are why an app proxy is not used for the exact root-level `/configuration` URL.

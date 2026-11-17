@@ -20,18 +20,21 @@ class ActivationController extends Controller
         DB::transaction(function () use ($request, $customer): void {
             $product = Product::where('code_id', $request->validated('code_id'))->lockForUpdate()->firstOrFail();
             if ($product->status !== 'unclaimed' || $product->customer_id) {
-                throw ValidationException::withMessages(['code_id' => 'This product has already been claimed.']);
+                throw ValidationException::withMessages(['code_id' => __('ui.validation.already_claimed')]);
             }
             if ($customer->products()->where('status', 'active')->count() >= $customer->max_products) {
-                throw ValidationException::withMessages(['code_id' => 'Your account has reached its product limit.']);
+                throw ValidationException::withMessages(['code_id' => __('ui.validation.product_limit')]);
             }
 
             $url = $request->validated('google_review_url');
+            $customer->update(['business_name' => $request->validated('business_name')]);
             $product->update(['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => $url, 'claimed_at' => now()]);
             Activation::create(['product_id' => $product->id, 'customer_id' => $customer->id, 'actor_user_id' => $request->user()->id, 'action' => 'claimed', 'activated_at' => now()]);
             ReviewLinkHistory::create(['product_id' => $product->id, 'customer_id' => $customer->id, 'changed_by' => $request->user()->id, 'old_url' => null, 'new_url' => $url, 'changed_at' => now()]);
         });
 
-        return to_route('dashboard')->with('success', 'Product activated successfully.');
+        $request->session()->forget(['pending_product_code', 'url.intended']);
+
+        return to_route('dashboard')->with('success', __('ui.flash.product_activated'));
     }
 }

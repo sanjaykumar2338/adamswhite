@@ -31,10 +31,10 @@ class TeamInvitationNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("You're invited to manage {$this->businessName} on SHIFTRIX")
-            ->line("You have been invited to manage {$this->businessName}'s SHIFTRIX products.")
-            ->action('Accept invitation', route('invitations.accept', $this->token))
-            ->line('This invitation expires in seven days.');
+            ->subject(__('ui.mail.invite_subject', ['business' => $this->businessName]))
+            ->line(__('ui.mail.invite_line', ['business' => $this->businessName]))
+            ->action(__('ui.mail.invite_action'), route('invitations.accept', $this->token))
+            ->line(__('ui.mail.invite_expiry'));
     }
 
     /**

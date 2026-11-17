@@ -27,6 +27,6 @@ class ProductController extends Controller
             $product->update(['customer_id' => null, 'status' => 'unclaimed', 'google_review_url' => null, 'claimed_at' => null, 'disabled_at' => null]);
         });
 
-        return back()->with('success', 'Product reset to unclaimed.');
+        return back()->with('success', __('ui.flash.product_reset'));
     }
 }

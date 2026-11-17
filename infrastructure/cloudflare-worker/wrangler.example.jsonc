@@ -3,9 +3,6 @@
   "main": "src/worker.mjs",
   "compatibility_date": "2026-11-16",
   "routes": [
-    { "pattern": "shiftrix.io/configuration*", "zone_name": "shiftrix.io" },
-    { "pattern": "shiftrix.io/saas*", "zone_name": "shiftrix.io" },
-    { "pattern": "shiftrix.io/build/*", "zone_name": "shiftrix.io" },
-    { "pattern": "shiftrix.io/images/products/*", "zone_name": "shiftrix.io" }
+    { "pattern": "shiftrix.io/configuration*", "zone_name": "shiftrix.io" }
   ]
 }

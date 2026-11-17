@@ -22,12 +22,12 @@ class ActivationFlowTest extends TestCase
         return Product::create(array_merge(['batch_id' => $batch->id, 'inventory_import_id' => $import->id, 'code_id' => 'CARD-00001', 'variant' => 'CARD', 'code_sequence' => 1, 'unit_type' => 'commercial', 'position_in_batch' => 1, 'source_line' => 1, 'status' => 'unclaimed'], $overrides));
     }
 
-    public function test_unclaimed_product_displays_activation_page_and_records_scan(): void
+    public function test_unclaimed_product_redirects_to_shopify_tutorial_and_records_one_scan(): void
     {
         $product = $this->product();
-        $this->get('/configuration?id=CARD-00001')->assertOk()->assertInertia(fn ($page) => $page->component('Configuration/Activate'));
+        $this->get('/configuration?id=CARD-00001')->assertRedirect('https://shiftrix.io/pages/how-to-configure?id=CARD-00001');
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'unclaimed']);
-        $this->assertSame(route('configuration', ['id' => 'CARD-00001']), session('url.intended'));
+        $this->assertDatabaseCount('scan_events', 1);
     }
 
     public function test_owner_can_claim_product_and_active_scan_redirects(): void
@@ -37,9 +37,11 @@ class ActivationFlowTest extends TestCase
         $customer = Customer::create(['business_name' => 'Cafe Test', 'status' => 'active', 'max_products' => 10]);
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
         $url = 'https://g.page/r/example/review';
-        $this->actingAs($user)->post('/saas/activations', ['code_id' => $product->code_id, 'google_review_url' => $url])->assertSessionHasNoErrors();
+        $this->actingAs($user)->post('/activations', ['code_id' => $product->code_id, 'business_name' => 'Cafe Updated', 'google_review_url' => $url])->assertSessionHasNoErrors();
         $this->get('/configuration?id=CARD-00001')->assertRedirect($url);
         $this->assertDatabaseHas('products', ['id' => $product->id, 'customer_id' => $customer->id, 'status' => 'active']);
+        $this->assertDatabaseHas('customers', ['id' => $customer->id, 'business_name' => 'Cafe Updated']);
+        $this->assertDatabaseCount('scan_events', 1);
     }
 
     public function test_product_cannot_be_claimed_twice(): void
@@ -48,7 +50,7 @@ class ActivationFlowTest extends TestCase
         $customer = Customer::create(['business_name' => 'One', 'max_products' => 10]);
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
         $this->product(['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/first/review']);
-        $this->actingAs($user)->post('/saas/activations', ['code_id' => 'CARD-00001', 'google_review_url' => 'https://g.page/r/second/review'])->assertSessionHasErrors('code_id');
+        $this->actingAs($user)->post('/activations', ['code_id' => 'CARD-00001', 'business_name' => 'One', 'google_review_url' => 'https://g.page/r/second/review'])->assertSessionHasErrors('code_id');
     }
 
     public function test_invalid_google_redirect_is_rejected(): void
@@ -58,7 +60,7 @@ class ActivationFlowTest extends TestCase
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
         $this->product();
 
-        $this->actingAs($user)->post('/saas/activations', ['code_id' => 'CARD-00001', 'google_review_url' => 'https://google.com.evil.example/review'])->assertSessionHasErrors('google_review_url');
+        $this->actingAs($user)->post('/activations', ['code_id' => 'CARD-00001', 'business_name' => 'One', 'google_review_url' => 'https://google.com.evil.example/review'])->assertSessionHasErrors('google_review_url');
         $this->assertDatabaseHas('products', ['code_id' => 'CARD-00001', 'status' => 'unclaimed']);
     }
 }

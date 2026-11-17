@@ -1,38 +1,43 @@
-# SHIFTRIX local QA and production-readiness report
+# SHIFTRIX updated journey QA report
 
-Audit date: 16 November 2026. Production, Shopify, DNS and Namecheap files were not changed.
+Audit date: 17 November 2026. Production, Shopify, Namecheap, Cloudflare and DNS were not changed.
 
 ## Results
 
 | Area | Result | Evidence |
 |---|---|---|
-| PHP tests | PASS | 42 tests / 166 assertions after QA fixes |
-| Production frontend | PASS | Vite optimized build completed; browser console contained no errors |
-| Registration/auth/recovery | PASS | Browser registration/login/verification screens plus feature tests for registration, login, logout, verification, reset and password confirmation |
-| NFC activation | PASS | Browser activated an unclaimed inventory product; subsequent request returned exact 302 and incremented redirected scans once |
-| Statistics | PASS | Browser showed 13 seven-day and 19 thirty-day scans; test verifies bots are excluded and chart series matches |
-| Multiple products | PASS | Browser rendered CARD, PLATE and STAND for one customer with product imagery |
-| Owner/manager security | PASS | Direct request tests prove manager link editing and deny team administration, admin access, reset, and cross-customer updates |
-| Admin operations | PASS | Tests cover authorization, blocking behavior, product limits and reset history; inventory supports search, variant, status and batch filters |
-| CSV | PASS | Streamed customer-scoped CSV verified with correct grouped count |
-| Responsive UI | PASS with observation | Tailwind mobile breakpoints and responsive navigation are present; desktop browser and narrow-layout controls were inspected. Final physical iOS/Android acceptance remains a staging task |
-| Branding/assets | PASS with observation | Official navy/gold direction and SHIFTRIX mark are reflected. Supplied FR/EN files are product-marketing mockups, not dashboard specifications |
-| Security | PASS | CSRF web middleware, hashed passwords/invites/IPs, row-lock activation, policy authorization, strict Google HTTPS allowlist, no committed secrets, dependency audits clean |
-| Namecheap platform | COMPATIBLE, account verification pending | Public documentation lists PHP 8.0–8.5, MariaDB 11.4, SSH/Composer, mod_rewrite, SSL and cron |
-| Apex routing | DESIGN TEST PASS, live integration pending | Worker unit tests preserve query/body/302 and reject Shopify paths; live Cloudflare/Shopify staging cannot be completed without access/change approval |
+| PHP regression suite | PASS | 47 tests / 272 assertions |
+| Production frontend | PASS | Vite optimized build completed |
+| PHP formatting | PASS | Laravel Pint check completed with no changes required |
+| Dependencies | PASS | Composer audit and production npm audit report no known advisories |
+| Edge Worker | PASS | 2 Node tests; only `/configuration` is proxied and Shopify/app paths are rejected |
+| Unactivated scan | PASS | Exact 302 to `https://shiftrix.io/pages/how-to-configure?id=CODE_ID`; one scan event per request |
+| Activated scan | PASS | Exact direct 302 to the validated Google Review URL; one scan event per request |
+| Product recognition | PASS | CARD, PLATE and STAND are resolved only from validated inventory records and render the matching supplied image |
+| ID continuity | PASS | Query ID is retained across login, registration and email verification and returned to Shiftrix Track |
+| Activation | PASS | Verified customers can save business name and an allowlisted Google Review URL; activation is transactionally locked |
+| Localization | PASS | EN/FR switch persists in session and user preference; auth, activation, customer/admin screens, navigation, validation and framework emails are translated |
+| Customer/team/admin regression | PASS | Existing role boundaries, blocking, product limits, resets, charts and CSV behavior remain covered |
+| Responsive rendering | PASS with observation | Headless Chrome at a true 390 x 844 CSS viewport reported `scrollWidth=390`; CARD page and FR switch were rendered. Physical iPhone/Android acceptance remains a staging task |
+| Shopify section | PASS locally | Liquid section contains bilingual tutorial copy, video placeholder and an ID-preserving Track button; no live upload occurred |
+| Staging package | PASS | Reproducible package builder excludes secrets, workbook, local databases, logs, `vendor` and `node_modules` |
 
-## Defects fixed during QA
+## Browser checks
 
-1. Product destination updates threw HTTP 500 because the base controller did not include Laravel's authorization trait. Fixed and regression-tested for own/cross-customer products.
-2. A guest scanning an unclaimed product lost that product after login or registration. The intended configuration URL is now retained and tested.
-3. The initial edge concept could have intercepted Shopify `/products/*`. All SaaS routes now live under `/saas`; the Worker has four narrowly scoped route families.
-4. The previous deployment runbook used a one-minute cron interval, which Namecheap Shared Hosting disallows. It now specifies five minutes.
-5. The Namecheap origin lacked optional edge-only enforcement. A shared-secret middleware now fails closed when configured.
+The rendered local Laravel/Inertia application was exercised in Chrome, not only through PHPUnit. The browser resolved `CARD-00001`, populated its identifier automatically, displayed the CARD asset, switched from English to French without losing the identifier, and rendered at a 390px mobile viewport without horizontal overflow. Chrome's visible-control bridge failed to bind a tab during this run, so the fallback used Chrome headless plus DevTools Protocol; physical-device and visible-browser acceptance is deliberately left for staging.
 
-## Remaining blockers
+## Security and routing checks
 
-- Namecheap account access is required to confirm the purchased plan, enabled extensions, PHP CLI path, document-root control, SMTP and resource limits.
-- Cloudflare zone access and an approved DNS migration window are required for the exact apex route. No live edge or Shopify change has been made.
-- Legal entity/contact/retention text must be supplied before publishing legal pages.
-- The SaaS interface is currently English. The FR/EN supplied assets are product mockups; client confirmation is required before adding full French dashboard localization.
-- Final acceptance should include physical NFC devices and representative iPhone/Android browsers on the staging hostname.
+- `/configuration` is the only apex path intended for the edge origin. Root, login, assets and Shopify paths are not accepted by the Worker.
+- Optional `SHIFTRIX_EDGE_SECRET` enforcement applies only to `/configuration`; it cannot lock users out of `app.shiftrix.io`.
+- Google destinations remain restricted to approved HTTPS Google hosts and unsafe redirect targets fail validation.
+- CSRF protection, verified-email activation, policy authorization, customer scoping, hashed passwords/invitation tokens and hashed scan IPs remain intact.
+- No `.env`, credential, workbook, private source asset or local database is included in Git or the staging archive.
+
+## Remaining acceptance items
+
+- The additional email materials have not been received. Final tutorial video, captions/transcript, exact Shopify theme/template target and approved final EN/FR tutorial copy are still required.
+- Business name and account/contact email are supported. Address, phone, logo or other business-profile fields require the missing client specification before schema expansion.
+- Legal entity, contact and retention text must be supplied before publishing the legal pages.
+- Namecheap account access is required to confirm the purchased plan, PHP CLI/extensions, document-root control, SMTP, SSL and resource limits.
+- Final staging acceptance must use real NFC/QR devices, working email delivery and representative iPhone/Android browsers.

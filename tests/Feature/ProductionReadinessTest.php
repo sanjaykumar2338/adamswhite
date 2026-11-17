@@ -78,7 +78,7 @@ class ProductionReadinessTest extends TestCase
         $this->product('CARD', 1, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/first/review']);
         $this->product('PLATE', 2);
 
-        $this->actingAs($owner)->post(route('activations.store'), ['code_id' => 'PLATE-00002', 'google_review_url' => 'https://g.page/r/second/review'])->assertSessionHasErrors('code_id');
+        $this->actingAs($owner)->post(route('activations.store'), ['code_id' => 'PLATE-00002', 'business_name' => $customer->business_name, 'google_review_url' => 'https://g.page/r/second/review'])->assertSessionHasErrors('code_id');
         $this->assertDatabaseHas('products', ['code_id' => 'PLATE-00002', 'status' => 'unclaimed', 'customer_id' => null]);
     }
 
@@ -113,8 +113,9 @@ class ProductionReadinessTest extends TestCase
     {
         config(['services.shiftrix.edge_secret' => 'edge-test-secret']);
 
-        $this->get('/saas')->assertForbidden();
-        $this->withHeader('X-Shiftrix-Edge', 'edge-test-secret')->get('/saas')->assertOk();
+        $this->get('/')->assertOk();
+        $this->get('/configuration?id=CARD-00001')->assertForbidden();
+        $this->withHeader('X-Shiftrix-Edge', 'edge-test-secret')->get('/configuration?id=CARD-00001')->assertOk();
     }
 
     public function test_admin_inventory_filters_and_customer_block_controls(): void
@@ -132,7 +133,7 @@ class ProductionReadinessTest extends TestCase
 
     public function test_security_headers_are_present(): void
     {
-        $this->get('/saas')->assertOk()
+        $this->get('/')->assertOk()
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'DENY')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')

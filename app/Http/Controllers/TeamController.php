@@ -31,7 +31,7 @@ class TeamController extends Controller
         $invitation = TeamInvitation::create(['customer_id' => $customer->id, 'invited_by' => $request->user()->id, 'email' => strtolower($request->validated('email')), 'role' => 'manager', 'token_hash' => hash('sha256', $token), 'expires_at' => now()->addDays(7)]);
         Notification::route('mail', $invitation->email)->notify(new TeamInvitationNotification($token, $customer->business_name));
 
-        return back()->with('success', 'Manager invitation sent.');
+        return back()->with('success', __('ui.flash.invitation_sent'));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -40,6 +40,6 @@ class TeamController extends Controller
         abort_unless($customer && $request->user()->roleFor($customer) === 'owner' && $user->id !== $request->user()->id, 403);
         $customer->users()->detach($user->id);
 
-        return back()->with('success', 'Team member removed.');
+        return back()->with('success', __('ui.flash.member_removed'));
     }
 }

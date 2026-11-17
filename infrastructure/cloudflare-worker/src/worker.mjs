@@ -1,5 +1,5 @@
 const ALLOWED_PATHS = [
-    '/configuration', '/saas', '/build/', '/images/products/',
+    '/configuration',
 ];
 
 function isAllowed(pathname) {

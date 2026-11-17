@@ -1,2 +1,2 @@
-import GuestLayout from '@/Layouts/GuestLayout'; import { Head } from '@inertiajs/react';
-export default function Invalid({code}){return <GuestLayout><Head title="Invalid product"/><div className="text-center"><div className="text-5xl">⚠️</div><h1 className="mt-5 text-2xl font-bold">Product code not found</h1><p className="mt-2 text-slate-500">{code || 'The scanned link'} is not a valid SHIFTRIX identifier.</p></div></GuestLayout>}
+import GuestLayout from '@/Layouts/GuestLayout'; import { useTranslation } from '@/i18n'; import { Head } from '@inertiajs/react';
+export default function Invalid({code}){const {t}=useTranslation();return <GuestLayout><Head title={t('configuration.invalid_title')}/><div className="text-center"><div className="text-5xl">⚠️</div><h1 className="mt-5 text-2xl font-bold">{t('configuration.invalid_title')}</h1><p className="mt-2 text-slate-500">{t('configuration.invalid_text',{code:code||'—'})}</p></div></GuestLayout>}

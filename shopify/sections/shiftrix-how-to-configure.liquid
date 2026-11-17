@@ -1,0 +1,71 @@
+{% liquid
+  assign is_french = false
+  if request.locale.iso_code == 'fr'
+    assign is_french = true
+  endif
+%}
+
+<section id="shiftrix-tutorial-{{ section.id }}" class="shiftrix-tutorial" data-app-url="https://app.shiftrix.io/">
+  <div class="shiftrix-tutorial__inner">
+    <p class="shiftrix-tutorial__eyebrow">SHIFTRIX TRACK</p>
+    <h1>{% if is_french %}Configurez votre produit SHIFTRIX{% else %}Configure your SHIFTRIX product{% endif %}</h1>
+    <p class="shiftrix-tutorial__lead">{% if is_french %}Suivez ces étapes pour connecter votre CARD, PLATE ou STAND à votre page Google Avis.{% else %}Follow these steps to connect your CARD, PLATE or STAND to your Google Reviews page.{% endif %}</p>
+
+    <div class="shiftrix-tutorial__grid">
+      <div class="shiftrix-tutorial__video">
+        {% if section.settings.video_url != blank %}
+          <iframe src="{{ section.settings.video_url | escape }}" title="SHIFTRIX tutorial" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        {% else %}
+          <div class="shiftrix-tutorial__placeholder" role="img" aria-label="{% if is_french %}Emplacement réservé à la vidéo du tutoriel{% else %}Tutorial video placeholder{% endif %}"><span>▶</span><strong>{% if is_french %}Vidéo du tutoriel à venir{% else %}Tutorial video coming soon{% endif %}</strong></div>
+        {% endif %}
+      </div>
+
+      <ol class="shiftrix-tutorial__steps">
+        <li><span>1</span><div><strong>{% if is_french %}Repérez votre identifiant{% else %}Find your product ID{% endif %}</strong><p>{% if is_french %}Il est déjà inclus dans le lien de cette page.{% else %}It is already included in this page link.{% endif %}</p></div></li>
+        <li><span>2</span><div><strong>{% if is_french %}Ouvrez Shiftrix Track{% else %}Open Shiftrix Track{% endif %}</strong><p>{% if is_french %}Le bouton transmet automatiquement votre identifiant produit.{% else %}The button automatically carries your product ID forward.{% endif %}</p></div></li>
+        <li><span>3</span><div><strong>{% if is_french %}Connectez Google Avis{% else %}Connect Google Reviews{% endif %}</strong><p>{% if is_french %}Créez votre compte, vérifiez votre e-mail et ajoutez votre lien Google Avis.{% else %}Create your account, verify your email, and add your Google Reviews link.{% endif %}</p></div></li>
+      </ol>
+    </div>
+
+    <div class="shiftrix-tutorial__action">
+      <p data-product-label>{% if is_french %}Identifiant produit :{% else %}Product ID:{% endif %} <strong>—</strong></p>
+      <a data-track-button class="shiftrix-tutorial__button" href="https://app.shiftrix.io/" aria-disabled="true">{% if is_french %}Accéder à Shiftrix Track{% else %}Access Shiftrix Track{% endif %}</a>
+      <p data-product-error class="shiftrix-tutorial__error" hidden>{% if is_french %}Identifiant manquant ou invalide. Vous pourrez le saisir manuellement dans Shiftrix Track.{% else %}Missing or invalid ID. You can enter it manually in Shiftrix Track.{% endif %}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  #shiftrix-tutorial-{{ section.id }}{--navy:#071a3b;--gold:#c49a49;background:#f4f6fa;color:var(--navy);padding:clamp(48px,7vw,96px) 20px}.shiftrix-tutorial__inner{max-width:1160px;margin:auto}.shiftrix-tutorial__eyebrow{color:#9a722c;font-size:12px;font-weight:800;letter-spacing:.25em}.shiftrix-tutorial h1{font-size:clamp(34px,5vw,58px);line-height:1.05;margin:14px 0}.shiftrix-tutorial__lead{max-width:720px;color:#536176;font-size:18px;line-height:1.7}.shiftrix-tutorial__grid{display:grid;gap:32px;margin-top:40px}.shiftrix-tutorial__video{aspect-ratio:16/9;overflow:hidden;border-radius:24px;background:var(--navy);box-shadow:0 24px 55px #071a3b24}.shiftrix-tutorial__video iframe{width:100%;height:100%;border:0}.shiftrix-tutorial__placeholder{height:100%;display:grid;place-content:center;gap:16px;text-align:center;color:white;background:linear-gradient(135deg,#071a3b,#17467d)}.shiftrix-tutorial__placeholder span{font-size:52px;color:var(--gold)}.shiftrix-tutorial__steps{list-style:none;padding:0;margin:0;display:grid;gap:16px}.shiftrix-tutorial__steps li{display:flex;gap:16px;background:white;border-radius:18px;padding:20px;box-shadow:0 8px 25px #071a3b0d}.shiftrix-tutorial__steps li>span{display:grid;place-content:center;flex:0 0 36px;height:36px;border-radius:50%;background:var(--gold);color:white;font-weight:800}.shiftrix-tutorial__steps p{margin:5px 0 0;color:#667085;line-height:1.5}.shiftrix-tutorial__action{text-align:center;margin-top:38px}.shiftrix-tutorial__button{display:inline-block;margin-top:12px;padding:15px 26px;border-radius:12px;background:var(--gold);color:white!important;text-decoration:none;font-weight:800}.shiftrix-tutorial__error{color:#9a3412;font-size:14px}@media(min-width:900px){.shiftrix-tutorial__grid{grid-template-columns:1.15fr .85fr;align-items:center}}
+</style>
+
+<script>
+  (() => {
+    const section = document.getElementById('shiftrix-tutorial-{{ section.id }}');
+    if (!section) return;
+    const code = (new URLSearchParams(window.location.search).get('id') || '').trim().toUpperCase();
+    const valid = /^(CARD|PLATE|STAND)-\d{5}$/.test(code);
+    const button = section.querySelector('[data-track-button]');
+    const label = section.querySelector('[data-product-label] strong');
+    const error = section.querySelector('[data-product-error]');
+    label.textContent = valid ? code : '—';
+    error.hidden = valid;
+    button.href = valid ? `${section.dataset.appUrl}?id=${encodeURIComponent(code)}` : section.dataset.appUrl;
+    button.setAttribute('aria-disabled', valid ? 'false' : 'true');
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "SHIFTRIX tutorial",
+  "settings": [
+    {
+      "type": "url",
+      "id": "video_url",
+      "label": "Tutorial video URL",
+      "info": "Optional YouTube or Vimeo embed URL. Leave empty to show the placeholder."
+    }
+  ],
+  "presets": [{ "name": "SHIFTRIX tutorial" }]
+}
+{% endschema %}

@@ -16,12 +16,8 @@ test('preserves product query and manual 302 redirect', async () => {
     assert.equal(response.headers.get('Location'), 'https://g.page/r/example/review');
 });
 
-test('preserves POST body for activation and rejects Shopify paths', async () => {
-    const activation = new Request('https://shiftrix.io/saas/activations', { method: 'POST', body: 'code_id=CARD-00001' });
-    const response = await proxyRequest(activation, env, async (request) => {
-        assert.equal(await request.text(), 'code_id=CARD-00001');
-        return new Response('ok');
-    });
-    assert.equal(await response.text(), 'ok');
+test('rejects Shopify and application paths', async () => {
     assert.equal((await proxyRequest(new Request('https://shiftrix.io/products/card'), env, async () => new Response('bad'))).status, 404);
+    assert.equal((await proxyRequest(new Request('https://shiftrix.io/'), env, async () => new Response('bad'))).status, 404);
+    assert.equal((await proxyRequest(new Request('https://shiftrix.io/login'), env, async () => new Response('bad'))).status, 404);
 });

@@ -48,11 +48,13 @@ Unique indexes enforce code IDs, variant sequences, source lines, batch position
 
 ## Application flow
 
-1. `/configuration?id=CODE_ID` validates the format and retrieves one indexed product.
-2. An active product with an active customer immediately records the scan and returns a 302 redirect to the validated HTTPS Google destination.
-3. An unclaimed product records the scan and displays login/activation; the product ID is server-controlled.
-4. Claiming locks the row, verifies ownership limits, creates history and activates exactly once.
-5. Disabled products or blocked customers fail closed without exposing the destination.
+1. The unchanged `/configuration?id=CODE_ID` scan URL validates the format and retrieves one indexed product.
+2. An active product with an active customer records one scan and returns a 302 to the validated HTTPS Google destination.
+3. An unclaimed product records one scan and returns a 302 to `https://shiftrix.io/pages/how-to-configure?id=CODE_ID`.
+4. The bilingual Shopify tutorial preserves the identifier in its `https://app.shiftrix.io/?id=CODE_ID` button.
+5. Shiftrix Track validates the ID against inventory without recording another scan and preserves it through registration, login and email verification.
+6. Claiming locks the row, verifies ownership limits, creates history and activates exactly once.
+7. Disabled products or blocked customers fail closed without exposing the destination.
 
 Raw IP addresses are not stored. Probable bots are retained for auditability but excluded from customer counts.
 
@@ -69,9 +71,9 @@ Raw IP addresses are not stored. Probable bots are retained for auditability but
 
 The exact scanned URL is on the Shopify apex domain while Laravel is intended for Namecheap. Namecheap cannot serve that path merely by pointing a subdomain at it. Shopify app proxies cannot preserve the required path because Shopify restricts their first path segment to `a`, `apps`, `community`, or `tools`; Shopify also follows upstream 30x responses, which conflicts with the required direct browser redirect.
 
-The tested approach is a Cloudflare Worker in front of the existing Shopify origin. It proxies only `/configuration*`, `/saas*`, `/build/*`, and `/images/products/*` to the Namecheap Laravel origin, leaves every other storefront path on Shopify, preserves the identifier query string and request bodies, and uses manual redirect handling so Laravel's Google Review 302 reaches the scanner unchanged. Application routes live below `/saas`, preventing collisions with Shopify's `/products/*` and account paths. The Worker and its Node tests are in `infrastructure/cloudflare-worker`.
+The tested approach is a Cloudflare Worker in front of the existing Shopify origin. It proxies only `/configuration*` to the Laravel origin, leaves every other storefront path on Shopify, preserves the identifier query string, and uses manual redirect handling so Laravel's tutorial or Google Review 302 reaches the scanner unchanged. The customer application is independently hosted at `app.shiftrix.io`, with its activation interface at `/?id=CODE_ID`. The Worker and its Node tests are in `infrastructure/cloudflare-worker`.
 
-This design requires the `shiftrix.io` zone to be proxied by Cloudflare; that is a later DNS change and has not been performed. The staging test must use a temporary Cloudflare hostname first. The Namecheap origin can require the shared `X-Shiftrix-Edge` header so direct requests cannot bypass the edge.
+This design requires the `shiftrix.io` zone to be proxied by Cloudflare; that is a later DNS change and has not been performed. The staging test must use a temporary Cloudflare hostname first. The Namecheap origin can require the shared `X-Shiftrix-Edge` header for `/configuration` only; normal `app.shiftrix.io` routes remain directly accessible.
 
 Production hosting access remains required to verify PHP 8.2+, MySQL, Composer/SSH, cron, mail transport, SSL, document-root controls, queue strategy and the selected Shopify/edge route. No production settings were changed.
 

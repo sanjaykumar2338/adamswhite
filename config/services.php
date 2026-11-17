@@ -4,6 +4,7 @@ return [
 
     'shiftrix' => [
         'edge_secret' => env('SHIFTRIX_EDGE_SECRET'),
+        'tutorial_url' => env('SHIFTRIX_TUTORIAL_URL', 'https://shiftrix.io/pages/how-to-configure'),
     ],
 
     /*

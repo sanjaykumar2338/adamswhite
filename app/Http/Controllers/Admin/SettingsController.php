@@ -23,6 +23,6 @@ class SettingsController extends Controller
             SystemSetting::updateOrCreate(['key' => $key], ['value' => (string) $value]);
         }
 
-        return back()->with('success', 'Settings saved.');
+        return back()->with('success', __('ui.flash.settings_saved'));
     }
 }

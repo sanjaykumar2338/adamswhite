@@ -15,6 +15,6 @@ class InvitationController extends Controller
         $invitation->customer->users()->syncWithoutDetaching([$request->user()->id => ['role' => $invitation->role, 'status' => 'active']]);
         $invitation->update(['accepted_at' => now()]);
 
-        return to_route('dashboard')->with('success', 'Invitation accepted.');
+        return to_route('dashboard')->with('success', __('ui.flash.invitation_accepted'));
     }
 }

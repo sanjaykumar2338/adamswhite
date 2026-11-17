@@ -19,6 +19,6 @@ class ProductController extends Controller
             $product->update(['google_review_url' => $url]);
         });
 
-        return back()->with('success', 'Review destination updated.');
+        return back()->with('success', __('ui.flash.review_updated'));
     }
 }

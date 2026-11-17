@@ -11,7 +11,7 @@ class EnsureEdgeProxy
     public function handle(Request $request, Closure $next): Response
     {
         $expected = (string) config('services.shiftrix.edge_secret');
-        if ($expected !== '' && ! hash_equals($expected, (string) $request->header('X-Shiftrix-Edge'))) {
+        if ($request->is('configuration') && $expected !== '' && ! hash_equals($expected, (string) $request->header('X-Shiftrix-Edge'))) {
             abort(403);
         }
 
