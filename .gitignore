@@ -21,6 +21,8 @@
 /vendor
 /*.xlsx
 /*.xls
+/*.tar.gz
+/*.tar.gz.sha256
 /SHIFTRIX - COMPLETE ASSETS/
 /audit-output/
 /artifacts/

@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/configuration', ConfigurationController::class)->name('configuration');
+Route::get('/configuration/invalid', fn () => Inertia::render('Configuration/Invalid', ['code' => request()->query('id')]))->name('configuration.invalid');
+Route::get('/configuration/unavailable', fn () => Inertia::render('Configuration/Unavailable', ['code' => request()->query('id')]))->name('configuration.unavailable');
 Route::get('/', TrackController::class)->name('home');
 Route::post('/locale/{locale}', LocaleController::class)->name('locale.update');
 Route::get('/legal-notice', fn () => Inertia::render('Legal', ['titleKey' => 'legal.notice_title', 'kind' => 'legal']))->name('legal');

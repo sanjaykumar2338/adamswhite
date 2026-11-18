@@ -15,10 +15,12 @@ class ScanRecorder
         $referrerHost = parse_url((string) $request->headers->get('referer'), PHP_URL_HOST);
         $key = (string) config('app.key', 'shiftrix');
 
-        $event = ScanEvent::create([
+        $edgeRequestId = (string) $request->header('X-Shiftrix-Request-Id');
+        $requestUuid = Str::isUuid($edgeRequestId) ? $edgeRequestId : (string) Str::uuid();
+
+        $event = ScanEvent::firstOrCreate(['request_uuid' => $requestUuid], [
             'product_id' => $product->id,
             'customer_id' => $product->customer_id,
-            'request_uuid' => (string) Str::uuid(),
             'result' => $result,
             'ip_hash' => $request->ip() ? hash_hmac('sha256', $request->ip(), $key) : null,
             'user_agent_hash' => $userAgent !== '' ? hash('sha256', $userAgent) : null,
@@ -28,7 +30,9 @@ class ScanRecorder
             'scanned_at' => now(),
         ]);
 
-        $product->forceFill(['last_scanned_at' => now()])->saveQuietly();
+        if ($event->wasRecentlyCreated) {
+            $product->forceFill(['last_scanned_at' => now()])->saveQuietly();
+        }
 
         return $event;
     }

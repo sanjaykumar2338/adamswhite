@@ -43,14 +43,16 @@
   (() => {
     const section = document.getElementById('shiftrix-tutorial-{{ section.id }}');
     if (!section) return;
-    const code = (new URLSearchParams(window.location.search).get('id') || '').trim().toUpperCase();
+    const params = new URLSearchParams(window.location.search);
+    const code = (params.get('id') || '').trim().toUpperCase();
     const valid = /^(CARD|PLATE|STAND)-\d{5}$/.test(code);
     const button = section.querySelector('[data-track-button]');
     const label = section.querySelector('[data-product-label] strong');
     const error = section.querySelector('[data-product-error]');
     label.textContent = valid ? code : '—';
     error.hidden = valid;
-    button.href = valid ? `${section.dataset.appUrl}?id=${encodeURIComponent(code)}` : section.dataset.appUrl;
+    params.set('id', code);
+    button.href = valid ? `${section.dataset.appUrl}?${params.toString()}` : section.dataset.appUrl;
     button.setAttribute('aria-disabled', valid ? 'false' : 'true');
   })();
 </script>

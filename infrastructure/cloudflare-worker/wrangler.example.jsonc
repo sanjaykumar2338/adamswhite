@@ -2,7 +2,10 @@
   "name": "shiftrix-saas-router",
   "main": "src/worker.mjs",
   "compatibility_date": "2026-11-16",
+  "vars": {
+    "SHIFTRIX_ORIGIN": "https://app.shiftrix.io"
+  },
   "routes": [
-    { "pattern": "shiftrix.io/configuration*", "zone_name": "shiftrix.io" }
+    { "pattern": "https://shiftrix.io/configuration*", "zone_name": "shiftrix.io" }
   ]
 }

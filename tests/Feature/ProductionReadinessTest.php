@@ -88,7 +88,8 @@ class ProductionReadinessTest extends TestCase
         [, $customer] = $this->customerWithUser(customer: ['status' => 'blocked', 'blocked_at' => now()]);
         $product = $this->product('STAND', 1, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/private/review']);
 
-        $this->get('/configuration?id=STAND-00001')->assertOk()->assertInertia(fn ($page) => $page->component('Configuration/Unavailable'));
+        $this->get('/configuration?id=STAND-00001')->assertRedirect(route('configuration.unavailable', ['id' => 'STAND-00001']));
+        $this->get(route('configuration.unavailable', ['id' => 'STAND-00001']))->assertOk()->assertInertia(fn ($page) => $page->component('Configuration/Unavailable'));
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'blocked']);
 
         $this->actingAs($admin)->post(route('admin.products.reset', $product))->assertSessionHasNoErrors();
@@ -104,7 +105,7 @@ class ProductionReadinessTest extends TestCase
             ScanEvent::create(['product_id' => $product->id, 'customer_id' => $customer->id, 'request_uuid' => (string) Str::uuid(), 'result' => 'redirected', 'is_probable_bot' => $bot, 'scanned_at' => now()]);
         }
 
-        $this->actingAs($owner)->get(route('dashboard'))->assertInertia(fn ($page) => $page->where('summary.scans7d', 2)->where('summary.scans30d', 2)->has('series', 1));
+        $this->actingAs($owner)->get(route('dashboard'))->assertInertia(fn ($page) => $page->where('summary.scans7d', 2)->where('summary.scans30d', 2)->has('series', 30));
         $response = $this->actingAs($owner)->get(route('statistics.export'))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('CARD-00001,CARD,2', $response->streamedContent());
     }
@@ -115,7 +116,8 @@ class ProductionReadinessTest extends TestCase
 
         $this->get('/')->assertOk();
         $this->get('/configuration?id=CARD-00001')->assertForbidden();
-        $this->withHeader('X-Shiftrix-Edge', 'edge-test-secret')->get('/configuration?id=CARD-00001')->assertOk();
+        $this->withHeader('X-Shiftrix-Edge', 'edge-test-secret')->get('/configuration?id=CARD-00001')
+            ->assertRedirect(route('configuration.invalid', ['id' => 'CARD-00001']));
     }
 
     public function test_admin_inventory_filters_and_customer_block_controls(): void

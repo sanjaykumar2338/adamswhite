@@ -11,7 +11,8 @@ class TrackController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $code = strtoupper(trim((string) $request->query('id')));
+        $rawCode = $request->query('id');
+        $code = is_string($rawCode) ? strtoupper(trim($rawCode)) : '';
         $product = null;
         $invalid = false;
 
@@ -24,7 +25,9 @@ class TrackController extends Controller
         }
 
         if ($product && $product->status === 'unclaimed' && ! $product->customer_id) {
-            $intended = route('home', ['id' => $product->code_id], absolute: false);
+            $query = $request->query();
+            $query['id'] = $product->code_id;
+            $intended = route('home', $query, absolute: false);
             $request->session()->put('pending_product_code', $product->code_id);
             $request->session()->put('url.intended', $intended);
         }
