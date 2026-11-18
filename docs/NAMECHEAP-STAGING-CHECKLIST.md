@@ -92,12 +92,28 @@ The import is transactional and checksum-protected. Do not retry blindly after a
 ## 6. Cache, permissions and staging smoke test
 
 ```bash
-chmod -R u+rwX storage bootstrap/cache
+LIVE="$(pwd)"
+chmod 755 "$LIVE" "$LIVE/public"
+find "$LIVE" \
+  \( -path "$LIVE/.env" -o -path "$LIVE/storage" -o -path "$LIVE/bootstrap/cache" \
+     -o -path "$LIVE/inventory" -o -path "$LIVE/public/.well-known" \
+     -o -path "$LIVE/public/cgi-bin" \) -prune \
+  -o -type d -exec chmod 755 {} +
+find "$LIVE" \
+  \( -path "$LIVE/.env" -o -path "$LIVE/storage" -o -path "$LIVE/bootstrap/cache" \
+     -o -path "$LIVE/inventory" -o -path "$LIVE/public/.well-known" \
+     -o -path "$LIVE/public/cgi-bin" \) -prune \
+  -o -type f -exec chmod 644 {} +
+find storage bootstrap/cache -type d -exec chmod 775 {} +
+find storage bootstrap/cache -type f -exec chmod 664 {} +
+chmod 600 .env
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan about
 ```
+
+These permissions keep application directories traversable and public assets readable by LiteSpeed while leaving `.well-known`, `cgi-bin`, inventory and `.env` under their existing owners and protections.
 
 No `storage:link` is required for the current release because there are no public uploads. Verify `/up`, `/?id=CODE_ID`, EN/FR switching, registration, email verification, login/logout, password recovery, one unclaimed tutorial redirect, activation, a subsequent Google Review `302`, scan charts, CSV export and admin authorization.
 

@@ -1,6 +1,6 @@
 {
-    "name": "SHIFTRIX",
-    "short_name": "SHIFTRIX",
+    "name": "Shiftrix Track",
+    "short_name": "Shiftrix Track",
     "icons": [
         {
             "src": "/icon-192.png",
@@ -13,7 +13,7 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#071a3b",
-    "background_color": "#071a3b",
+    "theme_color": "#0B132B",
+    "background_color": "#0B132B",
     "display": "standalone"
 }

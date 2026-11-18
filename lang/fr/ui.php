@@ -17,8 +17,8 @@ return [
         'invitation_accepted' => 'Invitation acceptée.',
     ],
     'mail' => [
-        'invite_subject' => 'Vous êtes invité à gérer :business sur SHIFTRIX',
-        'invite_line' => 'Vous avez été invité à gérer les produits SHIFTRIX de :business.',
+        'invite_subject' => 'Vous êtes invité à gérer :business sur Shiftrix Track',
+        'invite_line' => 'Vous avez été invité à gérer les produits SHIFTRIX de :business dans Shiftrix Track.',
         'invite_action' => "Accepter l'invitation",
         'invite_expiry' => 'Cette invitation expire dans sept jours.',
     ],

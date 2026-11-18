@@ -44,11 +44,11 @@ export default function Products({ products, filters, batches, totalProducts }) 
     return <AuthenticatedLayout header={<h1 className="text-xl font-bold">{t('admin.inventory')}</h1>}>
         <Head title={t('admin.inventory')} />
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-            <div className="mb-5 rounded-xl bg-white p-4 shadow-sm">
+            <div className="surface-card mb-5 rounded-xl bg-white p-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
                     <label className="lg:col-span-2">
                         <span className="sr-only">{t('admin.search_code')}</span>
-                        <input className="w-full rounded-lg border-slate-300 text-sm focus:border-[#0b2854] focus:ring-[#0b2854]" type="search" placeholder={t('admin.search_code')} value={values.search} onChange={(event) => setValues({ ...values, search: event.target.value })} />
+                        <input className="w-full rounded-lg border-slate-300 text-sm focus:border-[#0B132B] focus:ring-[#0B132B]" type="search" placeholder={t('admin.search_code')} value={values.search} onChange={(event) => setValues({ ...values, search: event.target.value })} />
                     </label>
                     <FilterSelect label={t('common.variant')} value={values.variant} onChange={(value) => updateFilter('variant', value)}>
                         <option value="">{t('admin.all_variants')}</option>
@@ -74,7 +74,7 @@ export default function Products({ products, filters, batches, totalProducts }) 
                 </div>
             </div>
 
-            <div className="overflow-x-auto rounded-xl bg-white shadow">
+            <div className="surface-card overflow-x-auto rounded-xl bg-white">
                 <table className="min-w-[900px] w-full text-left text-sm">
                     <thead className="bg-slate-50"><tr>{[t('common.code'), t('common.variant'), t('common.batch'), t('admin.inventory_type'), t('common.status'), t('common.customer'), t('common.action')].map((label) => <th className="p-4" key={label}>{label}</th>)}</tr></thead>
                     <tbody>
@@ -96,10 +96,10 @@ export default function Products({ products, filters, batches, totalProducts }) 
 }
 
 function FilterSelect({ label, value, onChange, children }) {
-    return <label><span className="sr-only">{label}</span><select className="w-full rounded-lg border-slate-300 text-sm focus:border-[#0b2854] focus:ring-[#0b2854]" value={value} onChange={(event) => onChange(event.target.value)}>{children}</select></label>;
+    return <label><span className="sr-only">{label}</span><select className="w-full rounded-lg border-slate-300 text-sm focus:border-[#0B132B] focus:ring-[#0B132B]" value={value} onChange={(event) => onChange(event.target.value)}>{children}</select></label>;
 }
 
 function PaginationLink({ href, label, active = false, disabled = false }) {
-    const classes = `min-w-10 rounded-lg border px-3 py-2 text-center text-sm font-semibold ${active ? 'border-[#0b2854] bg-[#0b2854] text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} ${disabled ? 'pointer-events-none opacity-40' : ''}`;
+    const classes = `min-w-10 rounded-lg border px-3 py-2 text-center text-sm font-semibold ${active ? 'border-[#0B132B] bg-[#0B132B] text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} ${disabled ? 'pointer-events-none opacity-40' : ''}`;
     return href ? <Link className={classes} href={href} preserveScroll>{label}</Link> : <span className={classes}>{label}</span>;
 }

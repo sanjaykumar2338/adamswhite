@@ -30,7 +30,7 @@ Build locally at the reviewed commit:
 git switch main
 git pull --ff-only origin main
 npm ci
-APP_NAME=SHIFTRIX VITE_APP_NAME=SHIFTRIX npm run build
+APP_NAME="Shiftrix Track" VITE_APP_NAME="Shiftrix Track" npm run build
 test -f public/build/manifest.json
 
 APP_ARCHIVE="shiftrix-app-$(git rev-parse --short=12 HEAD).tar.gz"
@@ -122,7 +122,24 @@ rsync -a --delete "$FRONTEND_DIR/build/" "$LIVE/public/build/"
 
 cd "$LIVE"
 "$PHP82" "$COMPOSER" install --no-dev --prefer-dist --optimize-autoloader --no-interaction
-chmod -R u+rwX storage bootstrap/cache
+
+# Normalize application permissions for LiteSpeed without touching certificate
+# challenges, hosting-managed CGI files, the protected environment or inventory.
+chmod 755 "$LIVE" "$LIVE/public"
+find "$LIVE" \
+  \( -path "$LIVE/.env" -o -path "$LIVE/storage" -o -path "$LIVE/bootstrap/cache" \
+     -o -path "$LIVE/inventory" -o -path "$LIVE/public/.well-known" \
+     -o -path "$LIVE/public/cgi-bin" \) -prune \
+  -o -type d -exec chmod 755 {} +
+find "$LIVE" \
+  \( -path "$LIVE/.env" -o -path "$LIVE/storage" -o -path "$LIVE/bootstrap/cache" \
+     -o -path "$LIVE/inventory" -o -path "$LIVE/public/.well-known" \
+     -o -path "$LIVE/public/cgi-bin" \) -prune \
+  -o -type f -exec chmod 644 {} +
+find storage bootstrap/cache -type d -exec chmod 775 {} +
+find storage bootstrap/cache -type f -exec chmod 664 {} +
+chmod 600 .env
+
 "$PHP82" artisan optimize:clear
 "$PHP82" artisan config:cache
 "$PHP82" artisan route:cache
@@ -130,7 +147,7 @@ chmod -R u+rwX storage bootstrap/cache
 "$PHP82" artisan up
 ```
 
-Do not run `migrate`, `db:seed`, an inventory import, or any database reset for this release. No migration is required: the changes use the existing `scan_events.request_uuid` unique column and existing product/customer tables.
+Before caching configuration, edit the existing production `.env` in place: set `APP_NAME="Shiftrix Track"` and preserve the existing `SESSION_COOKIE=shiftrix_staging_session` value. Keeping that exact cookie name prevents the branding change from invalidating authenticated browser sessions. Do not replace `.env` or alter its database, SMTP, Shopify or secret values. Do not run `migrate`, `db:seed`, an inventory import, or any database reset for this release. No migration is required: the changes use the existing `scan_events.request_uuid` unique column and existing product/customer tables.
 
 ## Edge secret and Worker release
 
@@ -183,7 +200,20 @@ rsync -a --delete \
 rsync -a --delete "$ROLLBACK_DIR/app/public/build/" "$LIVE/public/build/"
 
 "$PHP82" "$COMPOSER" install --no-dev --prefer-dist --optimize-autoloader --no-interaction
-chmod -R u+rwX storage bootstrap/cache
+chmod 755 "$LIVE" "$LIVE/public"
+find "$LIVE" \
+  \( -path "$LIVE/.env" -o -path "$LIVE/storage" -o -path "$LIVE/bootstrap/cache" \
+     -o -path "$LIVE/inventory" -o -path "$LIVE/public/.well-known" \
+     -o -path "$LIVE/public/cgi-bin" \) -prune \
+  -o -type d -exec chmod 755 {} +
+find "$LIVE" \
+  \( -path "$LIVE/.env" -o -path "$LIVE/storage" -o -path "$LIVE/bootstrap/cache" \
+     -o -path "$LIVE/inventory" -o -path "$LIVE/public/.well-known" \
+     -o -path "$LIVE/public/cgi-bin" \) -prune \
+  -o -type f -exec chmod 644 {} +
+find storage bootstrap/cache -type d -exec chmod 775 {} +
+find storage bootstrap/cache -type f -exec chmod 664 {} +
+chmod 600 .env
 "$PHP82" artisan optimize:clear
 "$PHP82" artisan config:cache
 "$PHP82" artisan route:cache

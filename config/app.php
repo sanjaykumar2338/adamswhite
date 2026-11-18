@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'SHIFTRIX'),
+    'name' => env('APP_NAME', 'Shiftrix Track'),
 
     /*
     |--------------------------------------------------------------------------

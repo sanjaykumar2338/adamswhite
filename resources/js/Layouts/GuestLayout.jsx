@@ -4,10 +4,10 @@ import { Link } from '@inertiajs/react';
 
 export default function GuestLayout({ children }) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-[#f4f6fa] px-4 pt-6 sm:justify-center sm:pt-8">
+        <div className="flex min-h-screen flex-col items-center bg-[#f7f8fb] px-4 pt-6 sm:justify-center sm:pt-8">
             <div className="flex w-full max-w-md items-center justify-between">
                 <Link href={route('home')}>
-                    <ApplicationLogo className="h-12 w-48" />
+                    <ApplicationLogo className="h-12 w-52" />
                 </Link>
                 <LanguageSwitcher />
             </div>
