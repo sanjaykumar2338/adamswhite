@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -27,6 +28,47 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_administrators_are_redirected_to_the_admin_dashboard_after_login(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($admin);
+        $response->assertRedirect(route('admin.dashboard', absolute: false));
+    }
+
+    public function test_managers_are_redirected_to_the_customer_dashboard_after_login(): void
+    {
+        $manager = User::factory()->create();
+        $customer = Customer::create(['business_name' => 'Managed Business']);
+        $customer->users()->attach($manager->id, ['role' => 'manager', 'status' => 'active']);
+
+        $response = $this->post('/login', [
+            'email' => $manager->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($manager);
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_login_does_not_send_a_customer_to_an_unauthorized_intended_admin_page(): void
+    {
+        $user = User::factory()->create();
+        $this->get('/admin');
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 

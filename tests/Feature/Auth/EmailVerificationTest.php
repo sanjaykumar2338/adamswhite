@@ -55,4 +55,19 @@ class EmailVerificationTest extends TestCase
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
+
+    public function test_admin_is_redirected_to_admin_dashboard_after_email_verification(): void
+    {
+        $admin = User::factory()->unverified()->create(['is_admin' => true]);
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $admin->id, 'hash' => sha1($admin->email)]
+        );
+
+        $this->actingAs($admin)->get($verificationUrl)
+            ->assertRedirect(route('admin.dashboard', ['verified' => 1], false));
+
+        $this->assertTrue($admin->fresh()->hasVerifiedEmail());
+    }
 }

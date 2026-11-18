@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activation;
+use App\Models\Batch;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,9 +16,32 @@ class ProductController extends Controller
 {
     public function index(Request $request): Response
     {
-        $products = Product::with(['batch', 'customer'])->when($request->search, fn ($q, $s) => $q->where('code_id', 'like', "%{$s}%"))->when($request->variant, fn ($q, $v) => $q->where('variant', $v))->when($request->status, fn ($q, $s) => $q->where('status', $s))->when($request->batch, fn ($q, $batch) => $q->whereHas('batch', fn ($b) => $b->where('lot_number', $batch)))->paginate(50)->withQueryString();
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:32'],
+            'variant' => ['nullable', 'in:'.implode(',', Product::VARIANTS)],
+            'batch' => ['nullable', 'integer', 'exists:batches,id'],
+            'status' => ['nullable', 'in:unclaimed,active,disabled'],
+            'unit_type' => ['nullable', 'in:commercial,backup'],
+        ]);
 
-        return Inertia::render('Admin/Products', ['products' => $products, 'filters' => $request->only(['search', 'variant', 'status', 'batch'])]);
+        $search = trim($filters['search'] ?? '');
+        $query = Product::query()
+            ->with(['batch:id,code,lot_number', 'customer:id,business_name'])
+            ->when($search !== '', fn ($q) => $q->where('code_id', 'like', "%{$search}%"))
+            ->when($filters['variant'] ?? null, fn ($q, $variant) => $q->where('variant', $variant))
+            ->when($filters['batch'] ?? null, fn ($q, $batchId) => $q->where('batch_id', $batchId))
+            ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
+            ->when($filters['unit_type'] ?? null, fn ($q, $unitType) => $q->where('unit_type', $unitType))
+            ->orderBy('id');
+
+        $products = $query->paginate(50)->withQueryString();
+
+        return Inertia::render('Admin/Products', [
+            'products' => $products,
+            'filters' => [...$filters, 'search' => $search],
+            'batches' => Batch::query()->orderBy('lot_number')->get(['id', 'code', 'lot_number']),
+            'totalProducts' => Product::count(),
+        ]);
     }
 
     public function reset(Request $request, Product $product): RedirectResponse

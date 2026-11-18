@@ -9,7 +9,7 @@
 1. Back up the database and current release.
 2. Upload or pull the reviewed commit into a directory outside `public_html` where supported.
 3. Point the application document root at Laravel's `public` directory. Never expose `.env`, `vendor` internals, storage or the source workbook.
-4. Create `.env` from `.env.example` with `APP_ENV=production`, `APP_DEBUG=false`, the final HTTPS URL, MySQL credentials, SMTP settings and secure session settings.
+4. Create `.env` from `.env.example` with `APP_ENV=production`, `APP_DEBUG=false`, the final HTTPS URL, MySQL credentials, `DB_ENGINE=InnoDB`, SMTP settings and secure session settings.
 5. Run `composer install --no-dev --optimize-autoloader` and deploy the already-built frontend or run `npm ci && npm run build`.
 6. Run `php artisan migrate --force`, then `php artisan config:cache`, `route:cache`, `view:cache` and `storage:link` if public uploads are introduced.
 7. Validate and import the workbook from a private server path. Remove it from the host after the controlled import and backup.
@@ -21,7 +21,7 @@ Use `QUEUE_CONNECTION=sync` for the current staging release. Rotate application,
 
 ## Namecheap compatibility
 
-Namecheap currently documents PHP 8.0–8.5, MariaDB 11.4, MySQLi, Git, SSH (enabled from cPanel), Composer installation over SSH, mod_rewrite, SSL and cPanel cron. This satisfies Laravel 12's PHP 8.2 baseline and this application's database requirements. Shared Hosting prohibits cron intervals shorter than five minutes and more than five simultaneous cron jobs, so Laravel's conventional one-minute scheduler entry must not be used there.
+Namecheap currently documents PHP 8.0–8.5, MariaDB 11.4, MySQLi, Git, SSH (enabled from cPanel), Composer installation over SSH, mod_rewrite, SSL and cPanel cron. MariaDB includes InnoDB as its default transactional storage engine, and the application explicitly requests InnoDB for MySQL and MariaDB connections. This satisfies Laravel 12's PHP 8.2 baseline and this application's database requirements. Shared Hosting prohibits cron intervals shorter than five minutes and more than five simultaneous cron jobs, so Laravel's conventional one-minute scheduler entry must not be used there.
 
 Before upload, run `php deployment/staging/check-hosting.php` through the selected CLI PHP binary. The 31,500-row import passes locally at 256 MB and fails at 128 MB, so 256 MB is a hard minimum and 512 MB is recommended. Hosting-account access is still needed to verify the account-specific settings.
 

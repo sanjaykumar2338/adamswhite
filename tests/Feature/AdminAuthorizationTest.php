@@ -19,4 +19,11 @@ class AdminAuthorizationTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['is_admin' => true]))->get('/admin')->assertOk();
     }
+
+    public function test_admin_is_redirected_from_customer_dashboard_to_admin_dashboard(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->get('/dashboard')->assertRedirect('/admin');
+    }
 }
