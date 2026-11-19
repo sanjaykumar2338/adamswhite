@@ -19,10 +19,11 @@ class DashboardController extends Controller
 
         $customer = $request->user()->currentCustomer();
         abort_unless($customer, 403);
-        $products = $customer->products()->with('batch')
-            ->withCount(['scanEvents as scans_7d' => fn ($q) => $q->where('scanned_at', '>=', now()->subDays(7))->where('result', 'redirected')->where('is_probable_bot', false), 'scanEvents as scans_30d' => fn ($q) => $q->where('scanned_at', '>=', now()->subDays(30))->where('result', 'redirected')->where('is_probable_bot', false)])
-            ->latest('claimed_at')->get()->append('image_url');
         $firstChartDay = CarbonImmutable::today()->subDays(29);
+        $firstSevenDay = CarbonImmutable::today()->subDays(6);
+        $products = $customer->products()->with('batch')
+            ->withCount(['scanEvents as scans_7d' => fn ($q) => $q->where('scanned_at', '>=', $firstSevenDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false), 'scanEvents as scans_30d' => fn ($q) => $q->where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)])
+            ->latest('claimed_at')->get()->append('image_url');
         $dailyTotals = DB::table('scan_events')
             ->selectRaw('DATE(scanned_at) day, COUNT(*) total')
             ->where('customer_id', $customer->id)

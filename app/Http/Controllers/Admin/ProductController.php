@@ -41,6 +41,13 @@ class ProductController extends Controller
             'filters' => [...$filters, 'search' => $search],
             'batches' => Batch::query()->orderBy('lot_number')->get(['id', 'code', 'lot_number']),
             'totalProducts' => Product::count(),
+            'inventorySummary' => [
+                'total' => Product::count(),
+                'claimed' => Product::whereNotNull('customer_id')->count(),
+                'available' => Product::whereNull('customer_id')->where('status', 'unclaimed')->count(),
+                'disabled' => Product::where('status', 'disabled')->count(),
+                'backup' => Product::where('unit_type', 'backup')->count(),
+            ],
         ]);
     }
 

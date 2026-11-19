@@ -60,6 +60,7 @@ class AdminInventoryTest extends TestCase
                 ->where('products.current_page', 2)
                 ->where('products.total', 55)
                 ->where('totalProducts', 56)
+                ->where('inventorySummary', ['total' => 56, 'claimed' => 0, 'available' => 55, 'disabled' => 1, 'backup' => 1])
                 ->where('filters.variant', 'CARD')
                 ->where('products.prev_page_url', fn ($url) => str_contains($url, 'variant=CARD'))
             );

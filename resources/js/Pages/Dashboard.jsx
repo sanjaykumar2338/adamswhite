@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ScanActivityChart from '@/Components/ScanActivityChart';
 import { useTranslation } from '@/i18n';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
@@ -19,7 +20,7 @@ export default function Dashboard({ customer, products, summary, series }) {
                     <div><p className="text-sm text-slate-500">{t('dashboard.engagement')}</p><h2 className="text-lg font-bold">{t('dashboard.chart_title')}</h2></div>
                     <p className="text-sm text-slate-500">{t('dashboard.humans')}</p>
                 </div>
-                <ScanChart series={series} locale={locale} t={t} />
+                <ScanActivityChart series={series} locale={locale} t={t} />
             </div>
 
             <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
@@ -32,27 +33,6 @@ export default function Dashboard({ customer, products, summary, series }) {
             </div>
         </div>
     </AuthenticatedLayout>;
-}
-
-function ScanChart({ series, locale, t }) {
-    const max = Math.max(1, ...series.map((point) => Number(point.total)));
-    const formatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' });
-
-    return <div className="mt-5 overflow-x-auto pb-2">
-        <div className="grid h-52 min-w-[720px] grid-cols-[repeat(30,minmax(16px,1fr))] items-end gap-1.5 border-b border-slate-200 px-1" role="img" aria-label={t('dashboard.chart_accessible')}>
-            {series.map((point, index) => {
-                const count = Number(point.total);
-                const label = formatter.format(new Date(`${point.day}T00:00:00Z`));
-                const showDate = index % 5 === 0 || index === series.length - 1;
-
-                return <div key={point.day} className="flex h-full min-w-0 flex-col items-center justify-end" title={t('dashboard.chart_tooltip', { date: label, count })}>
-                    <span className={`mb-1 text-[10px] font-bold ${count ? 'text-[#0B132B]' : 'text-slate-400'}`}>{count}</span>
-                    <div className={`w-full rounded-t-sm ${count ? 'bg-[#E1A339]' : 'bg-slate-200'}`} style={{ height: count ? `${Math.max(12, (count / max) * 138)}px` : '4px' }} />
-                    <span className="mt-2 h-7 whitespace-nowrap text-[10px] text-slate-500">{showDate ? label : ''}</span>
-                </div>;
-            })}
-        </div>
-    </div>;
 }
 
 function ProductCard({ product, t }) {
