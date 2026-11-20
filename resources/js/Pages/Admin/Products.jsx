@@ -49,15 +49,15 @@ export default function Products({ products, filters, batches, totalProducts, in
         [t('admin.disabled'), inventorySummary.disabled, 'surface-card bg-white text-[#0B132B]'],
     ];
 
-    return <AuthenticatedLayout header={<div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#B8773C]">{t('admin.management')}</p><h1 className="mt-1 text-2xl font-extrabold text-[#0B132B]">{t('admin.inventory')}</h1></div>}>
+    return <AuthenticatedLayout header={<div><p className="text-sm font-bold uppercase tracking-[.16em] text-[#B8773C]">{t('admin.management')}</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#0B132B]">{t('admin.inventory')}</h1></div>}>
         <Head title={t('admin.inventory')} />
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">{summaryCards.map(([label, value, classes], index) => <div key={label} className={`rounded-2xl p-4 sm:p-5 ${classes}`}><p className="text-[11px] font-bold uppercase tracking-wider opacity-60">{label}</p><p className={`mt-2 text-2xl font-extrabold sm:text-3xl ${index === 0 ? 'text-[#F1C156]' : ''}`}>{Number(value).toLocaleString(locale)}</p></div>)}</div>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">{summaryCards.map(([label, value, classes], index) => <div key={label} className={`rounded-2xl p-4 transition hover:-translate-y-0.5 sm:p-5 ${classes}`}><p className="text-xs font-bold uppercase tracking-wider opacity-60">{label}</p><p className={`mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl ${index === 0 ? 'text-[#F1C156]' : ''}`}>{Number(value).toLocaleString(locale)}</p></div>)}</div>
 
             <div className="surface-card mb-5 mt-5 rounded-2xl bg-white p-5 sm:p-6">
                 <div className="mb-4"><h2 className="text-lg font-extrabold text-[#0B132B]">{t('admin.inventory_filters')}</h2><p className="mt-1 text-sm text-slate-500">{t('admin.inventory_filters_help')}</p></div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                    <label className="lg:col-span-2"><span className="mb-1.5 block text-xs font-bold text-slate-600">{t('admin.search_code')}</span>
+                    <label className="lg:col-span-2"><span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('admin.search_code')}</span>
                         <input className="w-full rounded-xl border-slate-300 text-sm focus:border-[#E1A339] focus:ring-[#E1A339]" type="search" placeholder={t('admin.search_code')} value={values.search} onChange={(event) => setValues({ ...values, search: event.target.value })} />
                     </label>
                     <FilterSelect label={t('common.variant')} value={values.variant} onChange={(value) => updateFilter('variant', value)}>
@@ -84,7 +84,8 @@ export default function Products({ products, filters, batches, totalProducts, in
                 </div>
             </div>
 
-            <div className="surface-card overflow-x-auto rounded-2xl bg-white">
+            <p className="mb-2 text-sm font-medium text-slate-500 sm:hidden">{t('common.table_scroll_hint')}</p>
+            <div className="table-scroll surface-card overflow-x-auto rounded-2xl bg-white" tabIndex="0" aria-label={t('admin.inventory')}>
                 <table className="min-w-[900px] w-full text-left text-sm">
                     <thead className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500"><tr>{[t('common.code'), t('common.variant'), t('common.batch'), t('admin.inventory_type'), t('common.status'), t('common.customer'), t('common.action')].map((label) => <th className="px-5 py-3.5" key={label}>{label}</th>)}</tr></thead>
                     <tbody>
@@ -106,7 +107,7 @@ export default function Products({ products, filters, batches, totalProducts, in
 }
 
 function FilterSelect({ label, value, onChange, children }) {
-    return <label><span className="mb-1.5 block text-xs font-bold text-slate-600">{label}</span><select className="w-full rounded-xl border-slate-300 text-sm focus:border-[#E1A339] focus:ring-[#E1A339]" value={value} onChange={(event) => onChange(event.target.value)}>{children}</select></label>;
+    return <label><span className="mb-1.5 block text-sm font-semibold text-slate-600">{label}</span><select className="w-full rounded-xl border-slate-300 text-sm focus:border-[#E1A339] focus:ring-[#E1A339]" value={value} onChange={(event) => onChange(event.target.value)}>{children}</select></label>;
 }
 
 function PaginationLink({ href, label, active = false, disabled = false }) {

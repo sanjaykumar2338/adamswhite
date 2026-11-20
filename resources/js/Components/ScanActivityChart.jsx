@@ -24,6 +24,7 @@ export default function ScanActivityChart({ series, locale, t, defaultRange = 30
             fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
             foreColor: '#64748b',
             animations: { enabled: true, speed: 450 },
+            dropShadow: { enabled: true, top: 5, left: 0, blur: 7, color: '#E1A339', opacity: 0.14 },
         },
         colors: ['#E1A339'],
         dataLabels: { enabled: false },
@@ -48,16 +49,18 @@ export default function ScanActivityChart({ series, locale, t, defaultRange = 30
                 datetimeUTC: true,
                 hideOverlappingLabels: true,
                 formatter: (value, timestamp) => dateFormatter.format(new Date(timestamp ?? value)),
-                style: { fontSize: '11px' },
+                style: { fontSize: '12px', fontWeight: 500 },
             },
         },
         yaxis: {
             min: 0,
             forceNiceScale: true,
-            labels: { formatter: (value) => String(Math.round(value)), style: { fontSize: '11px' } },
+            decimalsInFloat: 0,
+            labels: { formatter: (value) => String(Math.round(value)), style: { fontSize: '12px', fontWeight: 500 } },
         },
         tooltip: {
             theme: 'light',
+            marker: { show: true },
             x: { formatter: (value) => dateFormatter.format(new Date(value)) },
             y: { formatter: (value) => t('dashboard.scan_count', { count: Math.round(value) }) },
         },
@@ -73,19 +76,19 @@ export default function ScanActivityChart({ series, locale, t, defaultRange = 30
         }],
     };
 
-    return <div className="mt-3" role="img" aria-label={t('dashboard.chart_accessible')}>
+    return <section className="mt-3" aria-label={t('dashboard.chart_accessible')}>
         <div className="flex flex-wrap items-center justify-between gap-3">
             <div><span className="text-3xl font-extrabold text-[#0B132B]">{total.toLocaleString(locale)}</span><span className="ml-2 text-sm font-medium text-slate-500">{t('dashboard.total_scans')}</span></div>
-            <div className="inline-flex rounded-xl bg-slate-100 p-1" aria-label={t('dashboard.chart_range')}>
-                {[7, 30].map((days) => <button key={days} type="button" aria-pressed={range === days} onClick={() => setRange(days)} className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${range === days ? 'bg-[#0B132B] text-white shadow-sm' : 'text-slate-600 hover:text-[#0B132B]'}`}>{t(`dashboard.range_${days}`)}</button>)}
+            <div className="inline-flex rounded-xl bg-slate-100 p-1" role="group" aria-label={t('dashboard.chart_range')}>
+                {[7, 30].map((days) => <button key={days} type="button" aria-pressed={range === days} onClick={() => setRange(days)} className={`rounded-lg px-3.5 py-2 text-sm font-bold transition ${range === days ? 'bg-[#0B132B] text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-[#0B132B]'}`}>{t(`dashboard.range_${days}`)}</button>)}
             </div>
         </div>
         {total > 0
             ? <ReactApexChart options={options} series={chartSeries} type="area" height={290} />
-            : <div className="mt-4 flex h-[290px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 text-center">
+            : <div className="mt-4 flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 text-center sm:h-[290px]">
                 <div className="flex h-12 w-12 items-end justify-center gap-1 rounded-2xl bg-white shadow-sm" aria-hidden="true"><span className="mb-3 h-2 w-1.5 rounded-full bg-[#E1A339]/40" /><span className="mb-3 h-4 w-1.5 rounded-full bg-[#E1A339]/65" /><span className="mb-3 h-6 w-1.5 rounded-full bg-[#E1A339]" /></div>
                 <p className="mt-4 text-sm font-bold text-[#0B132B]">{t('dashboard.chart_empty')}</p>
                 <p className="mt-1 max-w-sm text-xs leading-5 text-slate-500">{t('dashboard.chart_empty_help')}</p>
             </div>}
-    </div>;
+    </section>;
 }

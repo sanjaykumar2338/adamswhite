@@ -2,15 +2,17 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+use App\Services\InventoryImportService;
+use RuntimeException;
+use Tests\TestCase;
 
 class InventoryImportTest extends TestCase
 {
-    /**
-     * A basic unit test example.
-     */
-    public function test_example(): void
+    public function test_inventory_workbook_must_be_readable(): void
     {
-        $this->assertTrue(true);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Inventory workbook is not readable');
+
+        app(InventoryImportService::class)->process('/definitely/missing/shiftrix-inventory.xlsx', true);
     }
 }
