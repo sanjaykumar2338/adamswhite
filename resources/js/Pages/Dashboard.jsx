@@ -40,20 +40,20 @@ export default function Dashboard({ customer, products, summary, series }) {
                 <p className="text-sm font-bold uppercase tracking-[.16em] text-[#B8773C]">{t('common.products')}</p>
                 <h2 className="mt-1 text-2xl font-extrabold text-[#0B132B]">{t('dashboard.your_products')}</h2>
             </div>
-            <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {products.map((product) => <ProductCard key={product.id} product={product} t={t} />)}
+            <div className={`mt-4 grid gap-5 ${products.length === 1 ? 'grid-cols-1' : 'md:grid-cols-2 xl:grid-cols-3'}`}>
+                {products.map((product) => <ProductCard key={product.id} product={product} t={t} featured={products.length === 1} />)}
                 {!products.length && <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-[#B8773C]"><ProductIcon /></div><p className="mt-4 font-bold text-[#0B132B]">{t('dashboard.no_products')}</p><p className="mt-2 text-sm text-slate-500">{t('dashboard.no_products_help')}</p><Link className="gold-button mt-5 inline-flex rounded-xl px-5 py-3 text-sm font-bold" href={route('home')}>{t('nav.activate')}</Link></div>}
             </div>
         </div>
     </AuthenticatedLayout>;
 }
 
-function ProductCard({ product, t }) {
+function ProductCard({ product, t, featured = false }) {
     const form = useForm({ google_review_url: product.google_review_url || '' });
 
-    return <article className="surface-card overflow-hidden rounded-2xl bg-white transition hover:-translate-y-0.5 hover:shadow-xl">
-        <div className="relative h-52 overflow-hidden bg-slate-200"><img src={product.image_url} alt={product.variant} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[#0B132B]/95 via-[#0B132B]/20 to-transparent" /><div className="absolute inset-x-5 bottom-4 text-white"><span className="rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-bold tracking-wide backdrop-blur">{product.variant}</span><h3 className="mt-3 text-xl font-extrabold">{product.code_id}</h3><p className="text-sm text-white/75">{t('common.batch')} {product.batch?.code}</p></div></div>
-        <form className="space-y-4 p-5" onSubmit={(event) => { event.preventDefault(); form.patch(route('products.update', product.id)); }}>
+    return <article className={`surface-card overflow-hidden rounded-2xl bg-white transition hover:-translate-y-0.5 hover:shadow-xl ${featured ? 'lg:grid lg:grid-cols-[minmax(18rem,.9fr)_minmax(0,1.1fr)]' : ''}`}>
+        <div className={`relative overflow-hidden bg-slate-200 ${featured ? 'h-60 lg:h-full lg:min-h-[21rem]' : 'h-52'}`}><img src={product.image_url} alt={product.variant} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[#0B132B]/95 via-[#0B132B]/20 to-transparent" /><div className="absolute inset-x-5 bottom-4 text-white"><span className="rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-bold tracking-wide backdrop-blur">{product.variant}</span><h3 className={`mt-3 font-extrabold ${featured ? 'text-2xl' : 'text-xl'}`}>{product.code_id}</h3><p className="text-sm text-white/75">{t('common.batch')} {product.batch?.code}</p></div></div>
+        <form className={`space-y-4 p-5 ${featured ? 'flex flex-col justify-center sm:p-7 lg:p-8' : ''}`} onSubmit={(event) => { event.preventDefault(); form.patch(route('products.update', product.id)); }}>
             <div className="grid grid-cols-2 divide-x divide-slate-200 rounded-xl bg-slate-50 py-3 text-sm"><span className="px-3"><b className="text-lg text-[#0B132B]">{product.scans_7d}</b><span className="ml-1 text-slate-500">{t('dashboard.scans_short_7')}</span></span><span className="px-3"><b className="text-lg text-[#0B132B]">{product.scans_30d}</b><span className="ml-1 text-slate-500">{t('dashboard.scans_short_30')}</span></span></div>
             <label className="block text-sm font-semibold text-slate-700">{t('dashboard.review_url')}<input type="url" className="mt-2 w-full rounded-xl border-slate-300 text-sm focus:border-[#E1A339] focus:ring-[#E1A339]" value={form.data.google_review_url} onChange={(event) => form.setData('google_review_url', event.target.value)} placeholder={t('dashboard.review_url')} /></label>
             {form.errors.google_review_url && <p className="text-xs text-red-600">{form.errors.google_review_url}</p>}

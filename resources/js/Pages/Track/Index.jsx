@@ -20,7 +20,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
         window.location.assign(route('home', { id: lookup.trim().toUpperCase() }));
     };
 
-    return <main className="min-h-screen bg-[#f4f6fa]">
+    return <main className="flex min-h-screen flex-col bg-[#f4f6fa]">
         <Head title={t('track.title')} />
         <header className="border-b border-white/10 bg-[#0B132B] text-white">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
@@ -30,7 +30,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
         </header>
 
         <section className="brand-gradient overflow-hidden text-white">
-            <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:py-20">
+            <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-14 lg:py-20">
                 <div><p className="text-xs font-bold tracking-[.28em] text-[#F1C156]">{t('track.eyebrow')}</p><h1 className="mt-4 max-w-2xl text-4xl font-black leading-tight sm:text-5xl">{t('track.title')}</h1><p className="mt-5 max-w-xl text-base leading-7 text-blue-100 sm:text-lg">{t('track.intro')}</p>
                     <form onSubmit={findProduct} className="mt-8 flex max-w-xl flex-col gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur sm:flex-row">
                         <input value={lookup} onChange={event => setLookup(event.target.value.toUpperCase())} className="min-w-0 grow rounded-xl border-0 bg-white px-4 py-3 font-mono text-base uppercase text-[#0B132B] shadow-sm focus:ring-2 focus:ring-[#E1A339]" placeholder={t('track.placeholder')} pattern="(CARD|PLATE|STAND)-[0-9]{5}" required />
@@ -41,7 +41,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
             </div>
         </section>
 
-        <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
+        <section className="mx-auto w-full max-w-5xl flex-1 px-5 py-12 sm:px-8 sm:py-16">
             {invalid && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900" role="alert">{t('track.invalid')}</div>}
             {product && <div className="overflow-hidden rounded-[1.75rem] bg-white shadow-xl shadow-slate-200/70 lg:grid lg:grid-cols-[.9fr_1.1fr]">
                 <div className="relative min-h-72 bg-[#e9edf4]"><img src={product.image_url} alt={t('track.photo_alt', { variant: product.variant })} className="absolute inset-0 h-full w-full object-cover" /><span className="absolute left-5 top-5 rounded-full bg-[#0B132B]/90 px-4 py-2 text-xs font-bold tracking-wider text-white">{product.variant}</span></div>
@@ -54,7 +54,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
                 </div>
             </div>}
         </section>
-        <footer className="border-t bg-white"><div className="mx-auto flex max-w-7xl flex-wrap gap-5 px-5 py-7 text-sm text-slate-500 sm:px-8"><Link href={route('legal')}>{t('legal.notice_title')}</Link><Link href={route('privacy')}>{t('legal.privacy_title')}</Link><Link href={route('cookies')}>{t('legal.cookies_title')}</Link></div></footer>
+        <footer className="mt-auto border-t border-slate-200 bg-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-5 py-7 text-sm font-medium text-slate-500 sm:px-8"><Link className="hover:text-[#0B132B]" href={route('legal')}>{t('legal.notice_title')}</Link><Link className="hover:text-[#0B132B]" href={route('privacy')}>{t('legal.privacy_title')}</Link><Link className="hover:text-[#0B132B]" href={route('cookies')}>{t('legal.cookies_title')}</Link></div></footer>
     </main>;
 }
 
