@@ -13,11 +13,11 @@
 5. Run `composer install --no-dev --optimize-autoloader` and deploy the already-built frontend or run `npm ci && npm run build`.
 6. Run `php artisan migrate --force`, then `php artisan config:cache`, `route:cache`, `view:cache` and `storage:link` if public uploads are introduced.
 7. Validate and import the workbook from a private server path. Remove it from the host after the controlled import and backup.
-8. Do not add cron or a queue worker for the current release: the application has no scheduled tasks or queued jobs. If scheduling is added later, Namecheap Shared Hosting requires at least a five-minute interval. Confirm the account's PHP CLI path first.
+8. Do not add cron or a persistent queue worker for the current release. IPinfo country enrichment uses Laravel's post-response `deferred` connection and does not depend on a worker. If scheduling is added later, Namecheap Shared Hosting requires at least a five-minute interval. Confirm the account's PHP CLI path first.
 9. Smoke-test registration, verification, password reset, one unclaimed scan, one active redirect, customer/admin authorization and CSV export.
 10. Configure the reviewed Cloudflare routes only after staging acceptance, then monitor HTTP failures and redirect latency.
 
-Use `QUEUE_CONNECTION=sync` for the current staging release. Rotate application, database and mail credentials after handover.
+Use `QUEUE_CONNECTION=sync` for the current staging release; IPinfo enrichment explicitly selects the built-in `deferred` connection. Configure `IPINFO_LITE_TOKEN` and `IPINFO_LITE_ENABLED=true` as described in `docs/IPINFO-LITE-COUNTRY-GEOLOCATION.md`. Rotate application, database and mail credentials after handover.
 
 ## Namecheap compatibility
 

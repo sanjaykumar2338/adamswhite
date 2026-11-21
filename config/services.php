@@ -9,6 +9,15 @@ return [
         'whatsapp_url' => env('SHIFTRIX_WHATSAPP_URL'),
     ],
 
+    'ipinfo_lite' => [
+        'enabled' => env('IPINFO_LITE_ENABLED', false),
+        'token' => env('IPINFO_LITE_TOKEN'),
+        'endpoint' => env('IPINFO_LITE_ENDPOINT', 'https://api.ipinfo.io/lite'),
+        'connect_timeout' => (int) env('IPINFO_LITE_CONNECT_TIMEOUT', 1),
+        'timeout' => (int) env('IPINFO_LITE_TIMEOUT', 2),
+        'cache_ttl' => (int) env('IPINFO_LITE_CACHE_TTL', 604800),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
