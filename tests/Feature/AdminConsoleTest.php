@@ -97,7 +97,7 @@ class AdminConsoleTest extends TestCase
         $this->scan($plate, $customer, true);
 
         $this->actingAs($admin)->get(route('admin.statistics.index', ['days' => 7]))->assertOk()->assertInertia(fn ($page) => $page
-            ->component('Admin/Statistics')->where('days', 7)->where('total', 2)
+            ->component('Admin/Statistics')->where('days', 7)->where('total', 2)->where('timezone', config('app.timezone'))
             ->where('variants.0.variant', 'CARD')->where('variants.0.total', 2)
             ->where('devices.0.label', 'unknown')->where('devices.0.total', 2)
             ->where('countries.0.label', 'unknown')->where('topProducts.0.code', 'CARD-00001')->where('topProducts.0.total', 2)

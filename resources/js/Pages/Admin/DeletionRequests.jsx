@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 export default function DeletionRequests({ requests }) {
     const { locale, t } = useTranslation();
-    return <AuthenticatedLayout><Head title={t('deletion.title')} /><div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 lg:px-8"><section className="rounded-3xl bg-[#0B132B] p-7 text-white"><p className="text-xs font-black uppercase tracking-[.2em] text-[#F1C156]">{t('admin.deletion_requests')}</p><h1 className="mt-2 text-3xl font-black">{t('deletion.title')}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">{t('deletion.intro')}</p></section><div className="mt-5 space-y-4">{requests.length ? requests.map((item) => <RequestCard key={item.id} item={item} locale={locale} t={t} />) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">{t('deletion.empty')}</div>}</div></div></AuthenticatedLayout>;
+    return <AuthenticatedLayout><Head title={t('deletion.title')} /><div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 lg:px-8"><section className="premium-hero rounded-3xl p-7 text-white"><p className="text-xs font-black uppercase tracking-[.2em] text-[#FFDC7A]">{t('admin.deletion_requests')}</p><h1 className="mt-2 text-3xl font-black">{t('deletion.title')}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">{t('deletion.intro')}</p></section><div className="mt-5 space-y-4">{requests.length ? requests.map((item) => <RequestCard key={item.id} item={item} locale={locale} t={t} />) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">{t('deletion.empty')}</div>}</div></div></AuthenticatedLayout>;
 }
 
 function RequestCard({ item, locale, t }) {

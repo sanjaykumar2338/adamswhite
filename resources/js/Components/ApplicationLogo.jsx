@@ -4,7 +4,7 @@ export default function ApplicationLogo({ dark = false, className = '', ...props
     const gradientId = useId().replaceAll(':', '');
     const ink = dark ? '#FFFFFF' : '#0B132B';
 
-    return <span {...props} className={`inline-flex items-center gap-2 ${className}`} role="img" aria-label="Shiftrix Track">
+    return <span {...props} className={`inline-flex items-center gap-2 ${className}`} role="img" aria-label="Shiftrix Track" translate="no">
         <svg className="h-full min-w-0 flex-1" viewBox="130 780 1750 440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMinYMid meet">
             <defs>
                 <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="293.8852" y1="800.17" x2="305.1476" y2="1116.6432">

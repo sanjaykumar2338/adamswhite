@@ -48,11 +48,11 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="flex h-[4.75rem] items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8 xl:px-10">
                     <button type="button" onClick={() => setOpen(true)} className="rounded-xl border border-slate-200 bg-white p-2.5 text-[#0B132B] shadow-sm lg:hidden" aria-label={t('common.menu')}><MenuIcon /></button>
                     <Link href={dashboardUrl} className="mr-auto min-w-0 lg:hidden"><ApplicationLogo className="h-8 w-28 sm:h-9 sm:w-36" /></Link>
-                    <div className="mr-auto hidden min-w-0 lg:block">{header || <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#B8773C]">SHIFTRIX TRACK</p><p className="mt-0.5 truncate text-sm font-semibold text-slate-500">{user.is_admin ? t('admin.workspace') : t('dashboard.workspace')}</p></>}</div>
+                    <div className="mr-auto hidden min-w-0 lg:block">{header || <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#B7791F]" translate="no">SHIFTRIX TRACK</p><p className="mt-0.5 truncate text-sm font-semibold text-slate-500">{user.is_admin ? t('admin.workspace') : t('dashboard.workspace')}</p></>}</div>
                     {!user.is_admin && <WorkspaceSwitcher t={t} />}
                     <LanguageSwitcher />
                     <Dropdown>
-                        <Dropdown.Trigger><button type="button" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 pr-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:border-[#E1A339]/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0B132B] text-sm font-black text-[#F1C156]">{user.name.charAt(0).toUpperCase()}</span><span className="hidden max-w-40 truncate sm:block">{user.name}</span><ChevronIcon /></button></Dropdown.Trigger>
+                        <Dropdown.Trigger><button type="button" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 pr-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:border-[#F4B942]/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0B132B] text-sm font-black text-[#FFDC7A]">{user.name.charAt(0).toUpperCase()}</span><span className="hidden max-w-40 truncate sm:block">{user.name}</span><ChevronIcon /></button></Dropdown.Trigger>
                         <Dropdown.Content align="right">
                             {!user.is_admin && <Dropdown.Link href={route('team.index')}>{t('nav.team')}</Dropdown.Link>}
                             <Dropdown.Link href={route('profile.edit')}>{t('nav.profile')}</Dropdown.Link>
@@ -74,12 +74,12 @@ function WorkspaceSwitcher({ t }) {
 
 function SidebarContent({ dashboardUrl, links, user, t, onNavigate }) {
     return <>
-        <div className="border-b border-white/10 px-7 py-6"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-11 w-48" dark /></Link>{user.is_admin && <span className="mt-3 inline-flex rounded-full bg-[#E1A339] px-3 py-1 text-[.65rem] font-black uppercase tracking-[.18em] text-[#0B132B]">{t('admin.badge')}</span>}</div>
+        <div className="border-b border-white/10 px-7 py-6"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-11 w-48" dark /></Link>{user.is_admin && <span className="mt-3 inline-flex rounded-full bg-[#F4B942] px-3 py-1 text-[.65rem] font-black uppercase tracking-[.18em] text-[#0B132B]">{t('admin.badge')}</span>}</div>
         <div className="px-5 pt-7"><p className="px-3 text-[.68rem] font-bold uppercase tracking-[.24em] text-slate-500">{user.is_admin ? t('admin.console') : t('dashboard.customer_space')}</p></div>
         <nav className="mt-3 flex-1 space-y-1.5 px-4" aria-label={t('nav.primary')}>
-            {links.map((item) => <Link key={item.label} href={item.href} onClick={onNavigate} className={`group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${item.active ? 'bg-[#E1A339] text-[#0B132B] shadow-lg shadow-black/10' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.active ? 'bg-white/25' : 'bg-white/[.06] text-slate-400 group-hover:text-[#F1C156]'}`}><NavIcon type={item.icon} /></span>{item.label}</Link>)}
+            {links.map((item) => <Link key={item.label} href={item.href} onClick={onNavigate} className={`group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${item.active ? 'bg-[#F4B942] text-[#0B132B] shadow-lg shadow-black/10' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.active ? 'bg-white/25' : 'bg-white/[.06] text-slate-400 group-hover:text-[#FFDC7A]'}`}><NavIcon type={item.icon} /></span>{item.label}</Link>)}
         </nav>
-        <div className="m-4 rounded-2xl border border-white/10 bg-white/[.06] p-4"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#F1C156]">{t('nav.need_help')}</p><p className="mt-2 text-sm leading-6 text-slate-300">{t('nav.support_help')}</p><a href="mailto:support@shiftrix.io" className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/15"><SupportIcon />{t('nav.contact_support')}</a></div>
+        <div className="m-4 rounded-2xl border border-white/10 bg-white/[.06] p-4"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#FFDC7A]">{t('nav.need_help')}</p><p className="mt-2 text-sm leading-6 text-slate-300">{t('nav.support_help')}</p><a href="mailto:support@shiftrix.io" className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/15"><SupportIcon />{t('nav.contact_support')}</a></div>
     </>;
 }
 

@@ -25,7 +25,7 @@ class StatisticsController extends Controller
         $products = Product::whereIn('id', $events->pluck('product_id')->filter()->unique())->get(['id', 'code_id', 'variant'])->keyBy('id');
         $customers = Customer::whereIn('id', $events->pluck('customer_id')->filter()->unique())->get(['id', 'business_name'])->keyBy('id');
 
-        return Inertia::render('Admin/Statistics', ['days' => $days, 'total' => $events->count(), 'series' => $series,
+        return Inertia::render('Admin/Statistics', ['days' => $days, 'timezone' => (string) config('app.timezone', 'UTC'), 'total' => $events->count(), 'series' => $series,
             'variants' => $events->groupBy(fn ($event) => $products->get($event->product_id)?->variant ?? 'unknown')->map(fn ($items, $variant) => ['variant' => $variant, 'total' => $items->count()])->values(),
             'devices' => $events->groupBy(fn ($e) => $e->device_category ?: 'unknown')->map(fn ($v, $k) => ['label' => $k, 'total' => $v->count()])->values(),
             'countries' => $events->groupBy(fn ($e) => $e->country_code ?: 'unknown')->map(fn ($v, $k) => ['label' => $k, 'total' => $v->count()])->sortByDesc('total')->values(),

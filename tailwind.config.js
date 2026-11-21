@@ -12,6 +12,16 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                brand: {
+                    navy: '#0B132B',
+                    'navy-soft': '#17284F',
+                    gold: '#F4B942',
+                    'gold-light': '#FFDC7A',
+                    'gold-dark': '#B7791F',
+                    canvas: '#F7F8FB',
+                },
+            },
             fontFamily: {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
