@@ -5,7 +5,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 export default function Settings({ settings }) {
     const { t } = useTranslation();
     const flash = usePage().props.flash;
-    const form = useForm({ support_email: settings.support_email || 'support@shiftrix.io', default_product_limit: settings.default_product_limit || 100 });
+    const form = useForm({ support_email: settings.support_email, default_product_limit: settings.default_product_limit || 100 });
 
     return <AuthenticatedLayout>
         <Head title={t('common.settings')} />

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\SupportContact;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,6 +40,12 @@ class HandleInertiaRequests extends Middleware
                 'currentWorkspaceId' => fn () => $request->user()?->currentCustomer()?->id,
             ],
             'locale' => app()->getLocale(),
+            'support' => fn () => [
+                'email' => $request->user()
+                    ? SupportContact::email()
+                    : config('services.shiftrix.support_email'),
+                'whatsappUrl' => SupportContact::whatsappUrl(),
+            ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

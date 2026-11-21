@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\InventoryImport;
 use App\Models\Product;
 use App\Models\ScanEvent;
+use App\Models\SystemSetting;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Notifications\TeamInvitationNotification;
@@ -149,12 +150,29 @@ class CustomerAccountSettingsTest extends TestCase
         $this->assertDatabaseHas('account_deletion_requests', ['user_id' => $owner->id, 'customer_id' => $customer->id, 'status' => 'pending']);
     }
 
-    public function test_authenticated_customer_can_access_help_with_unconfigured_whatsapp_fallback(): void
+    public function test_customer_help_uses_admin_support_email_and_hides_invalid_whatsapp(): void
     {
         [$owner] = $this->workspace();
-        config(['services.shiftrix.whatsapp_url' => null]);
+        SystemSetting::create(['key' => 'support_email', 'value' => 'support@shiftrix.io']);
+        config(['services.shiftrix.whatsapp_url' => 'https://example.com/not-whatsapp']);
 
-        $this->actingAs($owner)->get(route('help'))->assertOk()->assertInertia(fn ($page) => $page->component('Help/Index')->where('whatsappUrl', null));
+        $this->actingAs($owner)->get(route('help'))->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Help/Index')
+            ->where('whatsappUrl', null)
+            ->where('supportEmail', 'support@shiftrix.io')
+            ->where('support.email', 'support@shiftrix.io')
+        );
+    }
+
+    public function test_customer_help_normalizes_a_valid_whatsapp_number(): void
+    {
+        [$owner] = $this->workspace();
+        config(['services.shiftrix.whatsapp_url' => '+33 6 12 34 56 78']);
+
+        $this->actingAs($owner)->get(route('help'))->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Help/Index')
+            ->where('whatsappUrl', 'https://wa.me/33612345678')
+        );
     }
 
     public function test_admin_can_review_request_without_deleting_customer_data(): void

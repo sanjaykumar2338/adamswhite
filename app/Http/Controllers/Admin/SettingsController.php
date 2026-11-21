@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use App\Services\AdminAudit;
+use App\Support\SupportContact;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,7 +15,10 @@ class SettingsController extends Controller
 {
     public function edit(): Response
     {
-        return Inertia::render('Admin/Settings', ['settings' => SystemSetting::pluck('value', 'key')]);
+        $settings = SystemSetting::pluck('value', 'key');
+        $settings->put('support_email', $settings->get('support_email', SupportContact::email()));
+
+        return Inertia::render('Admin/Settings', ['settings' => $settings]);
     }
 
     public function update(Request $request): RedirectResponse

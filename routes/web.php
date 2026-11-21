@@ -69,6 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/batches', [AdminBatchController::class, 'index'])->name('batches.index');
         Route::get('/statistics', AdminStatisticsController::class)->name('statistics.index');
         Route::get('/activity', [AdminActivityController::class, 'index'])->name('activity.index');
+        Route::get('/help', HelpController::class)->name('help');
         Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');
         Route::patch('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
         Route::get('/deletion-requests', [AdminDeletionRequestController::class, 'index'])->name('deletion-requests.index');

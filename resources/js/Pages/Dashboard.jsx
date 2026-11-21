@@ -8,6 +8,7 @@ export default function Dashboard({ customer, products, summary, series, onboard
     const { locale, t } = useTranslation();
     const page = usePage();
     const flash = page.props.flash;
+    const supportEmail = page.props.support.email;
     const firstName = page.props.auth.user.name.trim().split(/\s+/)[0];
     const metrics = [
         { label: t('dashboard.total_eligible'), value: summary.totalScans, detail: t('dashboard.all_time'), icon: 'pulse' },
@@ -52,7 +53,7 @@ export default function Dashboard({ customer, products, summary, series, onboard
                 </div>
             </section>
 
-            <section id="help" className="mt-8 scroll-mt-24 rounded-2xl border border-[#F4B942]/25 bg-amber-50/70 p-5 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"><div><p className="font-bold text-[#0B132B]">{t('dashboard.need_review_help')}</p><p className="mt-1 text-sm leading-6 text-slate-600">{t('dashboard.review_help_text')}</p></div><a href="mailto:support@shiftrix.io" className="mt-4 inline-flex shrink-0 rounded-xl border border-[#F4B942]/40 bg-white px-4 py-2.5 text-sm font-bold text-[#0B132B] shadow-sm sm:mt-0">{t('nav.contact_support')}</a></section>
+            <section id="help" className="mt-8 scroll-mt-24 rounded-2xl border border-[#F4B942]/25 bg-amber-50/70 p-5 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"><div><p className="font-bold text-[#0B132B]">{t('dashboard.need_review_help')}</p><p className="mt-1 text-sm leading-6 text-slate-600">{t('dashboard.review_help_text')}</p></div><a href={`mailto:${supportEmail}`} className="mt-4 inline-flex shrink-0 rounded-xl border border-[#F4B942]/40 bg-white px-4 py-2.5 text-sm font-bold text-[#0B132B] shadow-sm transition hover:border-[#F4B942] hover:bg-[#fffaf0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F4B942] focus-visible:ring-offset-2 sm:mt-0">{t('nav.contact_support')}</a></section>
         </div>
     </AuthenticatedLayout>;
 }

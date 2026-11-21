@@ -6,10 +6,12 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { auth, support } = usePage().props;
+    const user = auth.user;
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const dashboardUrl = user.is_admin ? route('admin.dashboard') : route('dashboard');
+    const helpUrl = user.is_admin ? route('admin.help') : route('help');
     const customerLinks = [
         { label: t('nav.overview'), href: route('dashboard'), active: route().current('dashboard'), icon: 'home' },
         { label: t('nav.my_products'), href: route('products.index'), active: route().current('products.*'), icon: 'products' },
@@ -32,14 +34,14 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return <div className="min-h-screen bg-[#f6f7fb] text-[#0B132B]">
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-hidden bg-[#0B132B] text-white shadow-2xl shadow-[#0B132B]/20 lg:flex">
-            <SidebarContent dashboardUrl={dashboardUrl} links={links} user={user} t={t} />
+            <SidebarContent dashboardUrl={dashboardUrl} helpUrl={helpUrl} links={links} supportEmail={support.email} user={user} t={t} />
         </aside>
 
         {open && <div className="fixed inset-0 z-50 lg:hidden">
             <button type="button" className="absolute inset-0 bg-[#050b1d]/65 backdrop-blur-sm" onClick={() => setOpen(false)} aria-label={t('common.close_menu')} />
             <aside className="relative flex h-full w-[min(20rem,88vw)] flex-col overflow-y-auto bg-[#0B132B] text-white shadow-2xl">
                 <button type="button" onClick={() => setOpen(false)} className="absolute right-4 top-4 z-10 rounded-xl border border-white/15 bg-white/10 p-2 text-white" aria-label={t('common.close_menu')}><CloseIcon /></button>
-                <SidebarContent dashboardUrl={dashboardUrl} links={links} user={user} t={t} onNavigate={() => setOpen(false)} />
+                <SidebarContent dashboardUrl={dashboardUrl} helpUrl={helpUrl} links={links} supportEmail={support.email} user={user} t={t} onNavigate={() => setOpen(false)} />
             </aside>
         </div>}
 
@@ -72,14 +74,18 @@ function WorkspaceSwitcher({ t }) {
     return <Dropdown><Dropdown.Trigger><button type="button" className="hidden max-w-48 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 md:flex"><span className="truncate">{auth.workspaces.find(item => item.id === auth.currentWorkspaceId)?.business_name}</span><ChevronIcon /></button></Dropdown.Trigger><Dropdown.Content align="right">{auth.workspaces.map(workspace => <Dropdown.Link key={workspace.id} href={route('workspaces.update', workspace.id)} method="post" as="button">{workspace.business_name}{workspace.id === auth.currentWorkspaceId ? ` · ${t('common.current')}` : ''}</Dropdown.Link>)}</Dropdown.Content></Dropdown>;
 }
 
-function SidebarContent({ dashboardUrl, links, user, t, onNavigate }) {
+function SidebarContent({ dashboardUrl, helpUrl, links, supportEmail, user, t, onNavigate }) {
     return <>
         <div className="border-b border-white/10 px-7 py-6"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-11 w-48" dark /></Link>{user.is_admin && <span className="mt-3 inline-flex rounded-full bg-[#F4B942] px-3 py-1 text-[.65rem] font-black uppercase tracking-[.18em] text-[#0B132B]">{t('admin.badge')}</span>}</div>
         <div className="px-5 pt-7"><p className="px-3 text-[.68rem] font-bold uppercase tracking-[.24em] text-slate-500">{user.is_admin ? t('admin.console') : t('dashboard.customer_space')}</p></div>
         <nav className="mt-3 flex-1 space-y-1.5 px-4" aria-label={t('nav.primary')}>
             {links.map((item) => <Link key={item.label} href={item.href} onClick={onNavigate} className={`group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${item.active ? 'bg-[#F4B942] text-[#0B132B] shadow-lg shadow-black/10' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.active ? 'bg-white/25' : 'bg-white/[.06] text-slate-400 group-hover:text-[#FFDC7A]'}`}><NavIcon type={item.icon} /></span>{item.label}</Link>)}
         </nav>
-        <div className="m-4 rounded-2xl border border-white/10 bg-white/[.06] p-4"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#FFDC7A]">{t('nav.need_help')}</p><p className="mt-2 text-sm leading-6 text-slate-300">{t('nav.support_help')}</p><a href="mailto:support@shiftrix.io" className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/15"><SupportIcon />{t('nav.contact_support')}</a></div>
+        <div className="group relative m-4 rounded-2xl border border-white/10 bg-white/[.06] p-4 transition hover:-translate-y-0.5 hover:border-[#F4B942]/50 hover:bg-white/10 focus-within:border-[#F4B942]/70 focus-within:ring-2 focus-within:ring-[#F4B942]/40">
+            <Link href={helpUrl} onClick={onNavigate} className="absolute inset-0 rounded-2xl focus:outline-none" aria-label={t('nav.open_help')} />
+            <div className="pointer-events-none relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#FFDC7A]">{t('nav.need_help')}</p><p className="mt-2 text-sm leading-6 text-slate-300">{t('nav.support_help')}</p><span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#FFDC7A]">{t('nav.open_help')} <span aria-hidden="true">→</span></span></div>
+            <a href={`mailto:${supportEmail}`} className="relative z-10 mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm font-bold text-white transition hover:border-[#F4B942]/50 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFDC7A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B132B]"><SupportIcon />{t('nav.contact_support')}</a>
+        </div>
     </>;
 }
 

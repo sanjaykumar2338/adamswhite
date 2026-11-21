@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\InventoryImport;
 use App\Models\Product;
 use App\Models\ScanEvent;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,6 +30,22 @@ class AdminConsoleTest extends TestCase
         $this->actingAs($admin)->get(route('admin.managers.index'))->assertOk();
         $this->actingAs($admin)->get(route('admin.statistics.index'))->assertOk();
         $this->actingAs($admin)->get(route('admin.activity.index'))->assertOk();
+    }
+
+    public function test_admin_help_route_uses_configured_support_actions(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $customer = User::factory()->create();
+        SystemSetting::create(['key' => 'support_email', 'value' => 'support@shiftrix.io']);
+        config(['services.shiftrix.whatsapp_url' => 'https://wa.me/33612345678']);
+
+        $this->actingAs($customer)->get(route('admin.help'))->assertForbidden();
+        $this->actingAs($admin)->get(route('admin.help'))->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Help/Index')
+            ->where('supportEmail', 'support@shiftrix.io')
+            ->where('whatsappUrl', 'https://wa.me/33612345678')
+            ->where('support.email', 'support@shiftrix.io')
+        );
     }
 
     public function test_disabling_dashboard_preserves_activated_nfc_redirect_but_denies_customer_access(): void
