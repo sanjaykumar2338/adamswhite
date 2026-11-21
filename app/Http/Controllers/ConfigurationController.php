@@ -27,7 +27,7 @@ class ConfigurationController extends Controller
             return redirect()->away(route('configuration.invalid', $query), 302);
         }
 
-        if ($product->status === 'active' && $product->customer?->status === 'active' && $validator->isValid($product->google_review_url)) {
+        if ($product->status === 'active' && $validator->isValid($product->google_review_url)) {
             if ($request->isMethod('GET')) {
                 $recorder->record($product, $request, 'redirected', $started);
             }
@@ -35,7 +35,7 @@ class ConfigurationController extends Controller
             return redirect()->away($product->google_review_url, 302);
         }
 
-        if ($product->status === 'disabled' || ($product->customer && $product->customer->status !== 'active')) {
+        if ($product->status === 'disabled') {
             if ($request->isMethod('GET')) {
                 $recorder->record($product, $request, 'blocked', $started);
             }

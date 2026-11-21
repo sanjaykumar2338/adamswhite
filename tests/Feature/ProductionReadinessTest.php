@@ -82,15 +82,14 @@ class ProductionReadinessTest extends TestCase
         $this->assertDatabaseHas('products', ['code_id' => 'PLATE-00002', 'status' => 'unclaimed', 'customer_id' => null]);
     }
 
-    public function test_blocked_customer_scan_fails_closed_and_admin_can_reset_product(): void
+    public function test_blocked_customer_dashboard_does_not_stop_activated_product_and_admin_can_reset_it(): void
     {
         [$admin] = $this->customerWithUser(user: ['is_admin' => true]);
         [, $customer] = $this->customerWithUser(customer: ['status' => 'blocked', 'blocked_at' => now()]);
         $product = $this->product('STAND', 1, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/private/review']);
 
-        $this->get('/configuration?id=STAND-00001')->assertRedirect(route('configuration.unavailable', ['id' => 'STAND-00001']));
-        $this->get(route('configuration.unavailable', ['id' => 'STAND-00001']))->assertOk()->assertInertia(fn ($page) => $page->component('Configuration/Unavailable'));
-        $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'blocked']);
+        $this->get('/configuration?id=STAND-00001')->assertRedirect('https://g.page/r/private/review');
+        $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'redirected']);
 
         $this->actingAs($admin)->post(route('admin.products.reset', $product))->assertSessionHasNoErrors();
         $this->assertDatabaseHas('products', ['id' => $product->id, 'status' => 'unclaimed', 'customer_id' => null, 'google_review_url' => null]);

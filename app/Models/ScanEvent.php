@@ -9,7 +9,7 @@ class ScanEvent extends Model
 {
     protected $fillable = [
         'product_id', 'customer_id', 'request_uuid', 'result', 'ip_hash', 'user_agent_hash',
-        'referrer_host', 'is_probable_bot', 'response_time_ms', 'scanned_at',
+        'device_category', 'country_code', 'referrer_host', 'is_probable_bot', 'response_time_ms', 'scanned_at',
     ];
 
     protected function casts(): array

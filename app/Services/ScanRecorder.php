@@ -24,6 +24,8 @@ class ScanRecorder
             'result' => $result,
             'ip_hash' => $request->ip() ? hash_hmac('sha256', $request->ip(), $key) : null,
             'user_agent_hash' => $userAgent !== '' ? hash('sha256', $userAgent) : null,
+            'device_category' => $this->deviceCategory($userAgent),
+            'country_code' => $this->countryCode($request),
             'referrer_host' => is_string($referrerHost) ? mb_substr($referrerHost, 0, 255) : null,
             'is_probable_bot' => preg_match('/bot|crawler|spider|preview|facebookexternalhit|slurp/i', $userAgent) === 1,
             'response_time_ms' => $startedAt ? max(0, (int) round((microtime(true) - $startedAt) * 1000)) : null,
@@ -35,5 +37,34 @@ class ScanRecorder
         }
 
         return $event;
+    }
+
+    private function deviceCategory(string $userAgent): ?string
+    {
+        if ($userAgent === '') {
+            return null;
+        }
+
+        if (preg_match('/iPhone|iPad|iPod/i', $userAgent) === 1) {
+            return 'iphone';
+        }
+
+        if (preg_match('/Android/i', $userAgent) === 1) {
+            return 'android';
+        }
+
+        return 'other';
+    }
+
+    private function countryCode(Request $request): ?string
+    {
+        $edgeSecret = (string) config('services.shiftrix.edge_secret');
+        if ($edgeSecret === '' || ! hash_equals($edgeSecret, (string) $request->header('X-Shiftrix-Edge'))) {
+            return null;
+        }
+
+        $country = strtoupper((string) $request->header('X-Shiftrix-Country'));
+
+        return preg_match('/^[A-Z]{2}$/', $country) === 1 && $country !== 'XX' ? $country : null;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
+use App\Services\AdminAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,6 +23,7 @@ class SettingsController extends Controller
         foreach ($data as $key => $value) {
             SystemSetting::updateOrCreate(['key' => $key], ['value' => (string) $value]);
         }
+        app(AdminAudit::class)->record($request, 'settings.updated', null, ['keys' => array_keys($data)]);
 
         return back()->with('success', __('ui.flash.settings_saved'));
     }

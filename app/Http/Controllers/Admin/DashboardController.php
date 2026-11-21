@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Batch;
 use App\Models\Customer;
 use App\Models\Product;
@@ -21,6 +22,7 @@ class DashboardController extends Controller
         $claimedProducts = Product::whereNotNull('customer_id')->count();
         $firstChartDay = CarbonImmutable::today()->subDays(29);
         $firstSevenDay = CarbonImmutable::today()->subDays(6);
+        $today = CarbonImmutable::today()->startOfDay();
         $dailyTotals = DB::table('scan_events')
             ->selectRaw('DATE(scanned_at) day, COUNT(*) total')
             ->where('scanned_at', '>=', $firstChartDay->startOfDay())
@@ -66,11 +68,17 @@ class DashboardController extends Controller
         return Inertia::render('Admin/Dashboard', [
             'metrics' => [
                 'customers' => Customer::count(),
+                'activeCustomers' => Customer::where('status', 'active')->count(),
+                'disabledCustomers' => Customer::where('status', 'blocked')->count(),
+                'multiProductCustomers' => Customer::has('products', '>', 1)->count(),
+                'activeManagers' => DB::table('customer_memberships')->where('role', 'manager')->where('status', 'active')->count(),
                 'users' => User::count(),
                 'totalProducts' => $totalProducts,
                 'claimed' => $claimedProducts,
                 'available' => Product::whereNull('customer_id')->where('status', 'unclaimed')->count(),
                 'disabled' => Product::where('status', 'disabled')->count(),
+                'missingReview' => Product::whereNotNull('customer_id')->where(fn ($query) => $query->whereNull('google_review_url')->orWhere('google_review_url', ''))->count(),
+                'scansToday' => ScanEvent::where('scanned_at', '>=', $today)->where('result', 'redirected')->where('is_probable_bot', false)->count(),
                 'scans7d' => ScanEvent::where('scanned_at', '>=', $firstSevenDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->count(),
                 'scans30d' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->count(),
                 'claimRate' => $totalProducts > 0 ? round(($claimedProducts / $totalProducts) * 100, 1) : 0,
@@ -89,6 +97,11 @@ class DashboardController extends Controller
                 ->latest()
                 ->limit(6)
                 ->get(['id', 'business_name', 'status', 'max_products', 'created_at']),
+            'deviceDistribution' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->get(['device_category'])->groupBy(fn ($event) => $event->device_category ?: 'unknown')->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])->values(),
+            'countryDistribution' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->get(['country_code'])->groupBy(fn ($event) => $event->country_code ?: 'unknown')->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])->sortByDesc('total')->take(8)->values(),
+            'topProducts' => ScanEvent::query()->join('products', 'products.id', '=', 'scan_events.product_id')->where('scan_events.scanned_at', '>=', $firstChartDay->startOfDay())->where('scan_events.result', 'redirected')->where('scan_events.is_probable_bot', false)->selectRaw('products.id, products.code_id, COUNT(*) total')->groupBy('products.id', 'products.code_id')->orderByDesc('total')->limit(5)->get(),
+            'topCustomers' => ScanEvent::query()->join('customers', 'customers.id', '=', 'scan_events.customer_id')->where('scan_events.scanned_at', '>=', $firstChartDay->startOfDay())->where('scan_events.result', 'redirected')->where('scan_events.is_probable_bot', false)->selectRaw('customers.id, customers.business_name, COUNT(*) total')->groupBy('customers.id', 'customers.business_name')->orderByDesc('total')->limit(5)->get(),
+            'recentActions' => AuditLog::with('actor:id,name')->latest()->limit(6)->get(),
         ]);
     }
 }

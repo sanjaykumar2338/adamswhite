@@ -52,7 +52,7 @@ class ConfigurationRoutingTest extends TestCase
         $this->assertDatabaseCount('scan_events', 1);
     }
 
-    public function test_invalid_unknown_and_blocked_products_fail_safely(): void
+    public function test_invalid_unknown_products_fail_safely_while_blocked_customer_products_keep_working(): void
     {
         $this->get('/configuration?id=NOT-A-CODE&utm_source=nfc')
             ->assertRedirect(route('configuration.invalid', ['id' => 'NOT-A-CODE', 'utm_source' => 'nfc']));
@@ -62,9 +62,9 @@ class ConfigurationRoutingTest extends TestCase
         $blockedCustomer = Customer::create(['business_name' => 'Blocked Business', 'status' => 'blocked']);
         $blocked = $this->product('STAND', 3, ['customer_id' => $blockedCustomer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/private/review']);
         $this->get('/configuration?id=STAND-00003&source=qr')
-            ->assertRedirect(route('configuration.unavailable', ['id' => 'STAND-00003', 'source' => 'qr']));
+            ->assertRedirect('https://g.page/r/private/review');
 
-        $this->assertDatabaseHas('scan_events', ['product_id' => $blocked->id, 'result' => 'blocked']);
+        $this->assertDatabaseHas('scan_events', ['product_id' => $blocked->id, 'result' => 'redirected']);
         $this->assertDatabaseCount('scan_events', 1);
     }
 

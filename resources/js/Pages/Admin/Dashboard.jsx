@@ -4,13 +4,17 @@ import { useTranslation } from '@/i18n';
 import { Head, Link } from '@inertiajs/react';
 import ReactApexChart from 'react-apexcharts';
 
-export default function AdminDashboard({ metrics, scanSeries, variantDistribution, batchActivity, recentCustomers }) {
+export default function AdminDashboard({ metrics, scanSeries, variantDistribution, batchActivity, recentCustomers, deviceDistribution, countryDistribution, topProducts, topCustomers, recentActions }) {
     const { locale, t } = useTranslation();
     const metricCards = [
-        { label: t('admin.total_inventory'), value: metrics.totalProducts, detail: t('admin.inventory_units'), tone: 'navy' },
+        { label: t('admin.active_customers'), value: metrics.activeCustomers, detail: t('admin.total_customers_value', { count: metrics.customers }), tone: 'navy' },
         { label: t('admin.claimed'), value: metrics.claimed, detail: t('admin.claim_rate_value', { rate: metrics.claimRate }), tone: 'gold' },
-        { label: t('admin.available'), value: metrics.available, detail: t('admin.ready_to_activate'), tone: 'green' },
-        { label: t('admin.customers'), value: metrics.customers, detail: t('admin.users_value', { count: metrics.users }), tone: 'blue' },
+        { label: t('admin.missing_review'), value: metrics.missingReview, detail: t('admin.needs_configuration'), tone: 'green' },
+        { label: t('admin.multi_product'), value: metrics.multiProductCustomers, detail: t('admin.customer_accounts'), tone: 'blue' },
+        { label: t('admin.active_managers'), value: metrics.activeManagers, detail: t('admin.workspace_access'), tone: 'blue' },
+        { label: t('admin.disabled_accounts'), value: metrics.disabledCustomers, detail: t('admin.dashboard_only'), tone: 'green' },
+        { label: t('dashboard.scans_today'), value: metrics.scansToday, detail: t('dashboard.humans'), tone: 'navy' },
+        { label: t('admin.total_inventory'), value: metrics.totalProducts, detail: t('admin.inventory_units'), tone: 'gold' },
     ];
     const variantLabels = variantDistribution.map((item) => item.variant);
     const variantValues = variantDistribution.map((item) => Number(item.total));
@@ -71,6 +75,7 @@ export default function AdminDashboard({ metrics, scanSeries, variantDistributio
                     <div className="mt-5 space-y-1">{recentCustomers.map((customer) => <div key={customer.id} className="flex items-center gap-3 rounded-xl px-2 py-3 hover:bg-slate-50"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0B132B] text-sm font-extrabold text-[#F1C156]">{customer.business_name.charAt(0).toUpperCase()}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#0B132B]">{customer.business_name}</p><p className="mt-0.5 text-xs text-slate-500">{t('admin.customer_activity', { products: customer.products_count, users: customer.users_count })}</p></div><StatusBadge status={customer.status} t={t} /></div>)}{!recentCustomers.length && <p className="py-8 text-center text-sm text-slate-500">{t('admin.no_customers')}</p>}</div>
                 </section>
             </div>
+            <div className="mt-5 grid gap-5 lg:grid-cols-2 xl:grid-cols-3"><MiniList title={t('admin.device_distribution')} rows={deviceDistribution} label="label" locale={locale}/><MiniList title={t('admin.country_distribution')} rows={countryDistribution} label="label" locale={locale}/><MiniList title={t('admin.top_products')} rows={topProducts} label="code_id" locale={locale}/><MiniList title={t('admin.top_customers')} rows={topCustomers} label="business_name" locale={locale}/><section className="surface-card rounded-2xl bg-white p-5 lg:col-span-2"><SectionHeading eyebrow={t('admin.activity_log')} title={t('admin.recent_actions')}/><div className="mt-3 divide-y divide-slate-100">{recentActions.map(action => <div className="flex justify-between gap-3 py-3 text-sm" key={action.id}><div><p className="font-bold">{action.action}</p><p className="text-slate-500">{action.actor?.name || t('admin.system_actor')}</p></div><time className="text-xs text-slate-500">{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(action.created_at))}</time></div>)}{!recentActions.length && <p className="py-6 text-sm text-slate-500">{t('admin.no_recent_actions')}</p>}</div></section></div>
         </div>
     </AuthenticatedLayout>;
 }
@@ -80,3 +85,4 @@ function MetricCard({ label, value, detail, tone, locale }) { const tones = { na
 function SectionHeading({ eyebrow, title, description }) { return <div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#B8773C]">{eyebrow}</p><h2 className="mt-1 text-xl font-extrabold text-[#0B132B]">{title}</h2>{description && <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>}</div>; }
 function InventoryDetail({ label, value }) { return <div><p className="text-sm font-semibold text-slate-500">{label}</p><p className="mt-1 text-lg font-extrabold text-[#0B132B]">{value}</p></div>; }
 function StatusBadge({ status, t }) { return <span className={`rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{t(`common.status_${status}`)}</span>; }
+function MiniList({ title, rows, label, locale }) { return <section className="surface-card rounded-2xl bg-white p-5"><h2 className="text-lg font-extrabold">{title}</h2><div className="mt-3 divide-y divide-slate-100">{rows.map((row, index) => <div className="flex justify-between py-3 text-sm" key={`${row[label]}-${index}`}><span className="font-semibold">{row[label]}</span><span className="font-black">{Number(row.total).toLocaleString(locale)}</span></div>)}{!rows.length && <p className="py-6 text-sm text-slate-500">—</p>}</div></section>; }

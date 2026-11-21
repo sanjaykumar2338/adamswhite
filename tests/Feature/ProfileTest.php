@@ -61,7 +61,7 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_can_delete_their_account(): void
+    public function test_account_deletion_creates_a_review_request_without_deleting_the_user(): void
     {
         $user = User::factory()->create();
 
@@ -73,10 +73,11 @@ class ProfileTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
+            ->assertRedirect('/profile?tab=privacy');
 
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
+        $this->assertAuthenticated();
+        $this->assertNotNull($user->fresh());
+        $this->assertDatabaseHas('account_deletion_requests', ['user_id' => $user->id, 'status' => 'pending']);
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void

@@ -4,15 +4,16 @@ import { proxyRequest } from '../src/worker.mjs';
 
 const env = { SHIFTRIX_ORIGIN: 'https://app.shiftrix.io', EDGE_SHARED_SECRET: 'test-secret' };
 
-test('preserves every query parameter and returns the Laravel redirect unchanged', async () => {
+test('preserves every query parameter and forwards trusted country metadata', async () => {
     let fetchCount = 0;
-    const response = await proxyRequest(new Request('https://shiftrix.io/configuration?id=CARD-00001&utm_source=nfc&campaign=launch'), env, async (request) => {
+    const response = await proxyRequest(new Request('https://shiftrix.io/configuration?id=CARD-00001&utm_source=nfc&campaign=launch', { headers: { 'CF-IPCountry': 'fr' } }), env, async (request) => {
         fetchCount++;
         assert.equal(request.url, 'https://app.shiftrix.io/configuration?id=CARD-00001&utm_source=nfc&campaign=launch');
         assert.equal(request.redirect, 'manual');
         assert.equal(request.headers.get('X-Forwarded-Host'), 'shiftrix.io');
         assert.equal(request.headers.get('X-Shiftrix-Edge'), 'test-secret');
         assert.match(request.headers.get('X-Shiftrix-Request-Id'), /^[0-9a-f-]{36}$/i);
+        assert.equal(request.headers.get('X-Shiftrix-Country'), 'FR');
 
         return new Response(null, { status: 302, headers: { Location: 'https://g.page/r/example/review' } });
     });
@@ -49,14 +50,31 @@ test('does not forward storefront cookies or accept a caller supplied request id
     assert.equal(response.headers.get('Set-Cookie'), null);
 });
 
-test('rejects non-configuration paths and methods without contacting Laravel', async () => {
-    const neverFetch = async () => {
-        assert.fail('Laravel origin must not be contacted');
-    };
+test('passes non-configuration paths through to Shopify unchanged', async () => {
+    for (const path of ['/products/card', '/', '/login', '/configuration/invalid', '/configuration-extra?id=CARD-00001']) {
+        const incoming = new Request(`https://shiftrix.io${path}`, {
+            headers: { Cookie: 'shopify-session=value', 'X-Storefront-Test': 'preserved' },
+        });
+        let fetchCount = 0;
+        const response = await proxyRequest(incoming, env, async (request) => {
+            fetchCount++;
+            assert.equal(request, incoming);
+            assert.equal(request.url, incoming.url);
+            assert.equal(request.headers.get('Cookie'), 'shopify-session=value');
+            assert.equal(request.headers.get('X-Storefront-Test'), 'preserved');
+            assert.equal(request.headers.get('X-Shiftrix-Edge'), null);
 
-    for (const path of ['/products/card', '/', '/login', '/configuration/invalid', '/configuration-extra']) {
-        assert.equal((await proxyRequest(new Request(`https://shiftrix.io${path}`), env, neverFetch)).status, 404);
+            return new Response('Shopify response', { status: 200, headers: { 'X-Shopify-Origin': 'true' } });
+        });
+
+        assert.equal(fetchCount, 1);
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get('X-Shopify-Origin'), 'true');
     }
+});
+
+test('rejects unsupported methods on the exact configuration path without contacting an origin', async () => {
+    const neverFetch = async () => assert.fail('No origin should be contacted');
 
     const response = await proxyRequest(new Request('https://shiftrix.io/configuration?id=CARD-00001', { method: 'POST' }), env, neverFetch);
     assert.equal(response.status, 405);

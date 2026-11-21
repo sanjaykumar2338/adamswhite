@@ -32,7 +32,12 @@ class DashboardTest extends TestCase
         $this->actingAs($user)->get('/dashboard')->assertOk()->assertInertia(fn ($page) => $page
             ->component('Dashboard')
             ->where('customer.business_name', 'Test')
-            ->where('summary', ['products' => 0, 'scans7d' => 0, 'scans30d' => 0])
+            ->where('summary', ['products' => 0, 'totalScans' => 0, 'scansToday' => 0, 'scans7d' => 0, 'scans7dChange' => 0, 'scans30d' => 0])
+            ->where('onboarding.emailVerified', true)
+            ->where('onboarding.productActivated', false)
+            ->where('onboarding.reviewConfigured', false)
+            ->where('onboarding.firstScanReceived', false)
+            ->where('timezone', 'UTC')
             ->has('series', 30)
             ->where('series.0.total', 0)
             ->where('series.29.total', 0)
@@ -65,7 +70,8 @@ class DashboardTest extends TestCase
             ->where('series.1', ['day' => '2026-10-21', 'total' => 0])
             ->where('series.21', ['day' => '2026-11-10', 'total' => 2])
             ->where('series.29', ['day' => '2026-11-18', 'total' => 1])
-            ->where('summary', ['products' => 1, 'scans7d' => 1, 'scans30d' => 4])
+            ->where('summary', ['products' => 1, 'totalScans' => 4, 'scansToday' => 1, 'scans7d' => 1, 'scans7dChange' => -50, 'scans30d' => 4])
+            ->where('onboarding', ['emailVerified' => true, 'productActivated' => true, 'reviewConfigured' => true, 'firstScanReceived' => true])
             ->where('products.0.scans_7d', 1)
             ->where('products.0.scans_30d', 4)
         );

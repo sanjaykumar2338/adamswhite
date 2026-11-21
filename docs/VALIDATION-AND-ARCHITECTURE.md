@@ -54,7 +54,7 @@ Unique indexes enforce code IDs, variant sequences, source lines, batch position
 4. The bilingual Shopify tutorial preserves the identifier and original query parameters in its `https://app.shiftrix.io/?id=CODE_ID` button.
 5. Shiftrix Track validates the ID against inventory without recording another scan and preserves it through registration, login and email verification.
 6. Claiming locks the row, verifies ownership limits, creates history and activates exactly once.
-7. Disabled products or blocked customers fail closed without exposing the destination.
+7. Explicitly disabled products fail closed without exposing the destination. Disabling a customer account restricts dashboard authentication only; already activated physical products continue to redirect and record eligible scans.
 
 Raw IP addresses are not stored. Probable bots are retained for auditability but excluded from customer counts.
 

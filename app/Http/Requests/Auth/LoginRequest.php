@@ -50,6 +50,11 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (! Auth::user()->is_admin && Auth::user()->customers()->exists() && Auth::user()->currentCustomer()?->status !== 'active') {
+            Auth::logout();
+            throw ValidationException::withMessages(['email' => __('ui.validation.dashboard_disabled')]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

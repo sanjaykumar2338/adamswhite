@@ -33,6 +33,10 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'workspaces' => fn () => $request->user() && ! $request->user()->is_admin
+                    ? $request->user()->customers()->wherePivot('status', 'active')->get(['customers.id', 'business_name'])
+                    : [],
+                'currentWorkspaceId' => fn () => $request->user()?->currentCustomer()?->id,
             ],
             'locale' => app()->getLocale(),
             'flash' => [

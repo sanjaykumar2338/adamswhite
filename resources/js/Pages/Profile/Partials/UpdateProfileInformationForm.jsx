@@ -1,114 +1,17 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Transition } from '@headlessui/react';
-import { Link, useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from '@/i18n';
+import { Link, useForm, usePage } from '@inertiajs/react';
 
-export default function UpdateProfileInformation({
-    mustVerifyEmail,
-    status,
-    className = '',
-}) {
+export default function UpdateProfileInformation({ mustVerifyEmail, status }) {
     const { t } = useTranslation();
     const user = usePage().props.auth.user;
+    const nameParts = user.name.trim().split(/\s+/);
+    const form = useForm({ first_name: user.first_name || nameParts.shift() || '', last_name: user.last_name || nameParts.join(' '), email: user.email });
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm({
-            name: user.name,
-            email: user.email,
-        });
-
-    const submit = (e) => {
-        e.preventDefault();
-
-        patch(route('profile.update'));
-    };
-
-    return (
-        <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    {t('profile.information')}
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                    {t('profile.information_help')}
-                </p>
-            </header>
-
-            <form onSubmit={submit} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel htmlFor="name" value={t('common.name')} />
-
-                    <TextInput
-                        id="name"
-                        className="mt-1 block w-full"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                        isFocused
-                        autoComplete="name"
-                    />
-
-                    <InputError className="mt-2" message={errors.name} />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="email" value={t('common.email')} />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        className="mt-1 block w-full"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                        autoComplete="username"
-                    />
-
-                    <InputError className="mt-2" message={errors.email} />
-                </div>
-
-                {mustVerifyEmail && user.email_verified_at === null && (
-                    <div>
-                        <p className="mt-2 text-sm text-gray-800">
-                            {t('profile.unverified')}
-                            <Link
-                                href={route('verification.send')}
-                                method="post"
-                                as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                {t('profile.resend_link')}
-                            </Link>
-                        </p>
-
-                        {status === 'verification-link-sent' && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
-                                {t('auth.verify_sent')}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>{t('common.save')}</PrimaryButton>
-
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out"
-                        enterFrom="opacity-0"
-                        leave="transition ease-in-out"
-                        leaveTo="opacity-0"
-                    >
-                        <p className="text-sm text-gray-600">
-                            {t('common.saved')}
-                        </p>
-                    </Transition>
-                </div>
-            </form>
-        </section>
-    );
+    return <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><p className="text-xs font-black uppercase tracking-[.18em] text-[#B8773C]">{t('settings.profile')}</p><h2 className="mt-1 text-2xl font-black text-[#0B132B]">{t('profile.information')}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{t('profile.information_help')}</p><form onSubmit={(event) => { event.preventDefault(); form.patch(route('profile.update'), { preserveScroll: true }); }} className="mt-6 grid gap-5 sm:grid-cols-2"><Field label={t('profile.first_name')} error={form.errors.first_name}><input value={form.data.first_name} onChange={(event) => form.setData('first_name', event.target.value)} required autoComplete="given-name" className="premium-input" /></Field><Field label={t('profile.last_name')} error={form.errors.last_name}><input value={form.data.last_name} onChange={(event) => form.setData('last_name', event.target.value)} required autoComplete="family-name" className="premium-input" /></Field><div className="sm:col-span-2"><Field label={t('common.email')} error={form.errors.email}><input type="email" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} required autoComplete="username" className="premium-input" /></Field></div><div className="sm:col-span-2 flex items-center justify-between gap-4"><span className="text-sm font-bold text-emerald-600">{form.recentlySuccessful ? t('common.saved') : ''}</span><button disabled={form.processing} className="rounded-xl bg-[#0B132B] px-6 py-3 text-sm font-black text-white disabled:opacity-50">{t('common.save')}</button></div></form></div>
+        <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${user.email_verified_at ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}><VerificationIcon /></div><h2 className="mt-4 text-lg font-black text-[#0B132B]">{t('profile.verification')}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{user.email_verified_at ? t('profile.verified') : t('profile.unverified')}</p>{mustVerifyEmail && !user.email_verified_at && <Link href={route('verification.send')} method="post" as="button" className="mt-4 rounded-xl border border-[#E1A339] px-4 py-2.5 text-sm font-black text-[#8A5B18]">{t('profile.resend_link')}</Link>}{status === 'verification-link-sent' && <p className="mt-3 text-xs font-bold text-emerald-600">{t('auth.verify_sent')}</p>}</aside>
+    </section>;
 }
+
+function Field({ label, error, children }) { return <label className="block text-sm font-bold text-[#0B132B]">{label}{children}{error && <span className="mt-1 block text-xs font-semibold text-red-600">{error}</span>}</label>; }
+function VerificationIcon() { return <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-5m5 3a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" /></svg>; }

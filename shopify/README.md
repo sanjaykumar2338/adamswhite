@@ -15,3 +15,24 @@ The original client tutorial video is available locally in the ignored client-as
 The section intentionally inherits the active Shopify theme typography so it does not replace the storefront font system. Before installation, the client must also approve the exact theme/template target, tutorial wording, accessibility transcript, and French captions or equivalent French video.
 
 The section is not required for active-product redirects: the Cloudflare Worker returns Laravel's Google Review `302` directly to the browser. It is used only for the unactivated tutorial journey. Do not publish this section until the client approves the target theme and page template.
+
+## Minimal fix for the existing tutorial page
+
+The current Shopify page can retain its approved video, typography, wording and section layout. The local files below provide a CTA-only integration patch:
+
+- `assets/shiftrix-preserve-activation-query.js` validates and normalizes the incoming `id`, then adds it only to existing `.stx-cta-btn` links whose destination is `https://app.shiftrix.io`;
+- `snippets/shiftrix-preserve-activation-query.liquid` loads that helper as an ES module.
+
+After client approval, upload those two files to the active theme and render the snippet once after the existing tutorial page content:
+
+```liquid
+{% render 'shiftrix-preserve-activation-query' %}
+```
+
+This is intentionally separate from `sections/shiftrix-how-to-configure.liquid`: installing the CTA helper must not replace the live page, video, typography, copy or other sections. If `id` is absent or malformed, the helper makes no change and the existing manual-entry journey remains available.
+
+Run its isolated tests locally with:
+
+```bash
+node --test shopify/test/tutorial-cta.test.mjs
+```

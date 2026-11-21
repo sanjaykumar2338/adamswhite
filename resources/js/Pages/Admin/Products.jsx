@@ -1,9 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useTranslation } from '@/i18n';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-export default function Products({ products, filters, batches, totalProducts, inventorySummary }) {
+export default function Products({ products, filters, batches, customers, totalProducts, inventorySummary }) {
     const { locale, t } = useTranslation();
     const [values, setValues] = useState({
         search: filters.search || '',
@@ -11,7 +11,9 @@ export default function Products({ products, filters, batches, totalProducts, in
         batch: filters.batch || '',
         status: filters.status || '',
         unit_type: filters.unit_type || '',
+        customer: filters.customer || '',
     });
+    const assignment = useForm({ customer_id: '', start_code: '', end_code: '' });
 
     const applyFilters = (nextValues) => {
         router.get(route('admin.products.index'), nextValues, {
@@ -36,7 +38,7 @@ export default function Products({ products, filters, batches, totalProducts, in
     };
 
     const clearFilters = () => {
-        const empty = { search: '', variant: '', batch: '', status: '', unit_type: '' };
+        const empty = { search: '', variant: '', batch: '', status: '', unit_type: '', customer: '' };
         setValues(empty);
         applyFilters(empty);
     };
@@ -56,7 +58,7 @@ export default function Products({ products, filters, batches, totalProducts, in
 
             <div className="surface-card mb-5 mt-5 rounded-2xl bg-white p-5 sm:p-6">
                 <div className="mb-4"><h2 className="text-lg font-extrabold text-[#0B132B]">{t('admin.inventory_filters')}</h2><p className="mt-1 text-sm text-slate-500">{t('admin.inventory_filters_help')}</p></div>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
                     <label className="lg:col-span-2"><span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('admin.search_code')}</span>
                         <input className="w-full rounded-xl border-slate-300 text-sm focus:border-[#E1A339] focus:ring-[#E1A339]" type="search" placeholder={t('admin.search_code')} value={values.search} onChange={(event) => setValues({ ...values, search: event.target.value })} />
                     </label>
@@ -77,11 +79,21 @@ export default function Products({ products, filters, batches, totalProducts, in
                         <option value="commercial">{t('admin.commercial')}</option>
                         <option value="backup">{t('admin.backup')}</option>
                     </FilterSelect>
+                    <FilterSelect label={t('common.customer')} value={values.customer} onChange={(value) => updateFilter('customer', value)}><option value="">{t('admin.all_customers')}</option>{customers.map(customer => <option key={customer.id} value={customer.id}>{customer.business_name}</option>)}</FilterSelect>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
                     <p className="text-sm font-medium text-slate-600">{t('admin.product_counts', { filtered: products.total.toLocaleString(locale), total: totalProducts.toLocaleString(locale) })}</p>
                     <button className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-[#E1A339] hover:bg-amber-50" type="button" onClick={clearFilters}>{t('admin.clear_filters')}</button>
                 </div>
+            </div>
+
+            <div className="mb-5 grid gap-5 xl:grid-cols-[1fr_auto]">
+                <form className="surface-card rounded-2xl bg-white p-5" onSubmit={event => { event.preventDefault(); assignment.post(route('admin.products.assign-range'), { preserveScroll: true, onSuccess: () => assignment.reset() }); }}>
+                    <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold text-[#0B132B]">{t('admin.assign_range')}</h2><p className="mt-1 text-sm text-slate-500">{t('admin.range_help')}</p></div><a className="rounded-xl border border-[#E1A339] px-4 py-2 text-sm font-black text-[#0B132B]" href={route('admin.inventory.export')}>{t('admin.export_factory_csv')}</a></div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3"><FilterSelect label={t('common.customer')} value={assignment.data.customer_id} onChange={value => assignment.setData('customer_id', value)}><option value="">{t('admin.unassigned')}</option>{customers.map(customer => <option key={customer.id} value={customer.id}>{customer.business_name}</option>)}</FilterSelect><label><span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('admin.start_code')}</span><input className="w-full rounded-xl border-slate-300 text-sm" placeholder="CARD-00001" value={assignment.data.start_code} onChange={event => assignment.setData('start_code', event.target.value.toUpperCase())}/></label><label><span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('admin.end_code')}</span><input className="w-full rounded-xl border-slate-300 text-sm" placeholder="CARD-00010" value={assignment.data.end_code} onChange={event => assignment.setData('end_code', event.target.value.toUpperCase())}/></label></div>
+                    {Object.values(assignment.errors).length > 0 && <p className="mt-3 text-sm font-semibold text-red-600">{Object.values(assignment.errors)[0]}</p>}
+                    <button disabled={assignment.processing} className="mt-4 rounded-xl bg-[#0B132B] px-5 py-2.5 text-sm font-black text-white disabled:opacity-40">{t('admin.assign_range')}</button>
+                </form>
             </div>
 
             <p className="mb-2 text-sm font-medium text-slate-500 sm:hidden">{t('common.table_scroll_hint')}</p>

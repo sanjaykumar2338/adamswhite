@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -22,6 +23,8 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'preferred_locale',
         'password',
@@ -63,14 +66,27 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
     public function currentCustomer(): ?Customer
     {
+        $selectedCustomer = app()->bound('session') ? session('current_customer_id') : null;
+        if ($selectedCustomer) {
+            $customer = $this->customers()->whereKey($selectedCustomer)->wherePivot('status', 'active')->first();
+            if ($customer) {
+                return $customer;
+            }
+        }
+
         return $this->relationLoaded('customers')
-            ? $this->customers->first()
+            ? $this->customers->first(fn (Customer $customer): bool => $customer->pivot->status === 'active')
             : $this->customers()->wherePivot('status', 'active')->first();
     }
 
     public function roleFor(Customer $customer): ?string
     {
-        return $this->customers()->whereKey($customer->id)->first()?->pivot?->role;
+        return $this->customers()->whereKey($customer->id)->wherePivot('status', 'active')->first()?->pivot?->role;
+    }
+
+    public function deletionRequests(): HasMany
+    {
+        return $this->hasMany(AccountDeletionRequest::class);
     }
 
     public function preferredLocale(): string

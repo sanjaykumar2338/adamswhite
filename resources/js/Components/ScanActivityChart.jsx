@@ -1,7 +1,7 @@
 import ReactApexChart from 'react-apexcharts';
 import { useMemo, useState } from 'react';
 
-export default function ScanActivityChart({ series, locale, t, defaultRange = 30 }) {
+export default function ScanActivityChart({ series, locale, t, defaultRange = 30, showRangeSelector = true }) {
     const [range, setRange] = useState(defaultRange);
     const points = useMemo(() => series.slice(-range), [range, series]);
     const total = points.reduce((sum, point) => sum + Number(point.total), 0);
@@ -79,9 +79,9 @@ export default function ScanActivityChart({ series, locale, t, defaultRange = 30
     return <section className="mt-3" aria-label={t('dashboard.chart_accessible')}>
         <div className="flex flex-wrap items-center justify-between gap-3">
             <div><span className="text-3xl font-extrabold text-[#0B132B]">{total.toLocaleString(locale)}</span><span className="ml-2 text-sm font-medium text-slate-500">{t('dashboard.total_scans')}</span></div>
-            <div className="inline-flex rounded-xl bg-slate-100 p-1" role="group" aria-label={t('dashboard.chart_range')}>
+            {showRangeSelector && <div className="inline-flex rounded-xl bg-slate-100 p-1" role="group" aria-label={t('dashboard.chart_range')}>
                 {[7, 30].map((days) => <button key={days} type="button" aria-pressed={range === days} onClick={() => setRange(days)} className={`rounded-lg px-3.5 py-2 text-sm font-bold transition ${range === days ? 'bg-[#0B132B] text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-[#0B132B]'}`}>{t(`dashboard.range_${days}`)}</button>)}
-            </div>
+            </div>}
         </div>
         {total > 0
             ? <ReactApexChart options={options} series={chartSeries} type="area" height={290} />

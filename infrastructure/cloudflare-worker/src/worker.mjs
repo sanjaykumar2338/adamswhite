@@ -25,6 +25,9 @@ function upstreamHeaders(request, incoming, secret) {
     const clientIp = request.headers.get('CF-Connecting-IP');
     if (clientIp) headers.set('X-Forwarded-For', clientIp);
 
+    const country = request.headers.get('CF-IPCountry');
+    if (country && /^[A-Z]{2}$/i.test(country)) headers.set('X-Shiftrix-Country', country.toUpperCase());
+
     headers.set('X-Forwarded-Host', incoming.host);
     headers.set('X-Forwarded-Proto', 'https');
     headers.set('X-Shiftrix-Edge', secret);
@@ -36,7 +39,7 @@ function upstreamHeaders(request, incoming, secret) {
 export async function proxyRequest(request, env, fetcher = fetch) {
     const incoming = new URL(request.url);
     if (! isAllowed(incoming.pathname)) {
-        return new Response('Not found', { status: 404 });
+        return fetcher(request);
     }
     if (! ['GET', 'HEAD'].includes(request.method)) {
         return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });

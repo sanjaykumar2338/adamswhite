@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamInvitation extends Model
 {
-    protected $fillable = ['customer_id', 'invited_by', 'email', 'role', 'token_hash', 'expires_at', 'accepted_at'];
+    protected $fillable = ['customer_id', 'invited_by', 'email', 'role', 'token_hash', 'expires_at', 'accepted_at', 'revoked_at', 'revoked_by'];
 
     protected function casts(): array
     {
-        return ['expires_at' => 'datetime', 'accepted_at' => 'datetime'];
+        return ['expires_at' => 'datetime', 'accepted_at' => 'datetime', 'revoked_at' => 'datetime'];
     }
 
     public function customer(): BelongsTo
@@ -22,5 +22,23 @@ class TeamInvitation extends Model
     public function inviter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    public function revoker(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revoked_by');
+    }
+
+    public function getStateAttribute(): string
+    {
+        if ($this->revoked_at) {
+            return 'revoked';
+        }
+
+        if ($this->accepted_at) {
+            return 'accepted';
+        }
+
+        return $this->expires_at->isPast() ? 'expired' : 'pending';
     }
 }
