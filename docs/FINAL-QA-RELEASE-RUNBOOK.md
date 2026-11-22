@@ -18,7 +18,7 @@ The Cloudflare NFC route remains a prepared local change. It must not be describ
 - Pint: passed.
 - EN/FR audit: 383 statically referenced UI keys present in both locales; 435 entries in each locale; no locale-only keys.
 - React named-route audit: all 51 referenced route names exist.
-- Migration cycle: isolated fresh migration, rollback of all three new migrations, and reapplication passed.
+- Migration cycle: isolated fresh migration, rollback of the additive release migrations, and reapplication passed.
 - `git diff --check`: passed.
 
 The Vite build reports a non-blocking large-chunk warning for the ApexCharts-based chart bundle. This is a performance optimization opportunity, not a build or functional failure.
@@ -32,7 +32,7 @@ The Vite build reports a non-blocking large-chunk warning for the ApexCharts-bas
 
 ## Data-safety findings
 
-- The three release migrations are additive. They do not update product identifiers, NFC URLs, ownership, inventory rows, or historical scans.
+- The four release migrations are additive. They do not update product identifiers, NFC URLs, ownership, inventory rows, or historical scans.
 - Product ownership is enforced by the existing customer relationship and authorization policy on every product read/write path.
 - Blocking a customer prevents dashboard access but does not disable an otherwise active product's public NFC redirect.
 - Bot exclusion and duplicate-scan eligibility remain in the existing scan recorder. Optional device/country metadata collection does not change those decisions.
@@ -46,6 +46,7 @@ Run exactly in filename order:
 1. `2026_11_21_000001_add_product_labels_and_scan_metadata.php`
 2. `2026_11_21_000002_add_customer_account_management.php`
 3. `2026_11_21_000003_add_admin_console_fields.php`
+4. `2026_11_22_000001_add_scan_analytics_indexes.php`
 
 Never run `migrate:fresh`, `migrate:refresh`, seeders, inventory imports, or a production migration rollback during this release.
 
@@ -62,6 +63,10 @@ Never run `migrate:fresh`, `migrate:refresh`, seeders, inventory imports, or a p
 9. Build frontend assets before packaging, or install/build on the host only if the hosting plan reliably supports the required Node version. Confirm `public/build/manifest.json` exists.
 10. Run `php artisan config:cache`, `php artisan route:cache`, and `php artisan view:cache`.
 11. Switch the live symlink/directory atomically where supported, bring the application up, and immediately execute the smoke tests.
+
+### LiteSpeed compression verification
+
+Namecheap shared hosting normally applies Brotli or gzip through LiteSpeed at the server level. Do not add application-side compression middleware. After staging upload, verify that CSS/JS/WebP responses include `Content-Encoding: br` or `gzip` when the request advertises it, that `Vary: Accept-Encoding` is present, and that immutable hashed files under `public/build/assets` receive a long cache lifetime. If compression is absent, enable it only through the approved Namecheap/LiteSpeed control-panel setting or a host-reviewed `.htaccess` rule; do not change production server configuration without approval.
 
 The concrete host command sequence and Cloudflare variables are documented in `docs/SHOPIFY-CLOUDFLARE-PRODUCTION.md`.
 
@@ -102,7 +107,7 @@ Do this only under separate client approval:
 4. Clear and rebuild the Laravel caches using the prior release.
 5. Bring the application up and rerun the core smoke tests.
 
-Leave the three additive migrations applied during a normal code rollback. Their nullable/defaulted schema is compatible with the prior application. Do not run `php artisan migrate:rollback` in production. Restore the verified database backup only when a database-level rollback is explicitly approved and necessary.
+Leave the four additive migrations applied during a normal code rollback. Their nullable/defaulted/index-only schema is compatible with the prior application. Do not run `php artisan migrate:rollback` in production. Restore the verified database backup only when a database-level rollback is explicitly approved and necessary.
 
 ### Cloudflare rollback
 
@@ -116,5 +121,6 @@ Restore the prior reviewed theme version/section from Shopify theme history. Do 
 
 - Production NFC routing cannot be confirmed until the separately approved Cloudflare activation and live tests occur.
 - Historical analytics lacking trustworthy device/country metadata remains unknown/unavailable; scan source is not inferred.
-- WhatsApp support remains a configurable destination and shows a safe fallback until the client supplies a number.
+- WhatsApp support remains a validated configurable destination and is hidden until the client supplies a number or approved WhatsApp URL.
+- The supplied login/activation photography is included as optimized WebP. Product-specific CARD, PLATE, and STAND photography was not supplied, so the existing product imagery remains unchanged.
 - A production database backup, hosting credentials, and a maintenance window are operator prerequisites, not repository artifacts.

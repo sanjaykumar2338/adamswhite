@@ -33,7 +33,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const links = user.is_admin ? adminLinks : customerLinks;
 
     return <div className="min-h-screen bg-[#f6f7fb] text-[#0B132B]">
-        <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-hidden bg-[#0B132B] text-white shadow-2xl shadow-[#0B132B]/20 lg:flex">
+        <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto bg-[#0B132B] text-white shadow-2xl shadow-[#0B132B]/20 lg:flex">
             <SidebarContent dashboardUrl={dashboardUrl} helpUrl={helpUrl} links={links} supportEmail={support.email} user={user} t={t} />
         </aside>
 
@@ -76,15 +76,15 @@ function WorkspaceSwitcher({ t }) {
 
 function SidebarContent({ dashboardUrl, helpUrl, links, supportEmail, user, t, onNavigate }) {
     return <>
-        <div className="border-b border-white/10 px-7 py-6"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-11 w-48" dark /></Link>{user.is_admin && <span className="mt-3 inline-flex rounded-full bg-[#F4B942] px-3 py-1 text-[.65rem] font-black uppercase tracking-[.18em] text-[#0B132B]">{t('admin.badge')}</span>}</div>
-        <div className="px-5 pt-7"><p className="px-3 text-[.68rem] font-bold uppercase tracking-[.24em] text-slate-500">{user.is_admin ? t('admin.console') : t('dashboard.customer_space')}</p></div>
-        <nav className="mt-3 flex-1 space-y-1.5 px-4" aria-label={t('nav.primary')}>
-            {links.map((item) => <Link key={item.label} href={item.href} onClick={onNavigate} className={`group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${item.active ? 'bg-[#F4B942] text-[#0B132B] shadow-lg shadow-black/10' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.active ? 'bg-white/25' : 'bg-white/[.06] text-slate-400 group-hover:text-[#FFDC7A]'}`}><NavIcon type={item.icon} /></span>{item.label}</Link>)}
+        <div className="shrink-0 border-b border-white/10 px-7 py-4"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-10 w-48" dark /></Link>{user.is_admin && <span className="mt-2 inline-flex rounded-full bg-[#F4B942] px-3 py-1 text-[.65rem] font-black uppercase tracking-[.18em] text-[#0B132B]">{t('admin.badge')}</span>}</div>
+        <div className="shrink-0 px-5 pt-4"><p className="px-3 text-[.68rem] font-bold uppercase tracking-[.24em] text-slate-500">{user.is_admin ? t('admin.console') : t('dashboard.customer_space')}</p></div>
+        <nav className="mt-2 flex-1 space-y-1 px-4" aria-label={t('nav.primary')}>
+            {links.map((item) => <Link key={item.label} href={item.href} onClick={onNavigate} className={`group flex items-center gap-3 rounded-xl px-3.5 py-2 text-sm font-semibold transition ${item.active ? 'bg-[#F4B942] text-[#0B132B] shadow-lg shadow-black/10' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}><span className={`flex h-8 w-8 items-center justify-center rounded-lg ${item.active ? 'bg-white/25' : 'bg-white/[.06] text-slate-400 group-hover:text-[#FFDC7A]'}`}><NavIcon type={item.icon} /></span>{item.label}</Link>)}
         </nav>
-        <div className="group relative m-4 rounded-2xl border border-white/10 bg-white/[.06] p-4 transition hover:-translate-y-0.5 hover:border-[#F4B942]/50 hover:bg-white/10 focus-within:border-[#F4B942]/70 focus-within:ring-2 focus-within:ring-[#F4B942]/40">
+        <div className="group relative m-4 shrink-0 rounded-2xl border border-white/10 bg-white/[.06] p-3 transition hover:-translate-y-0.5 hover:border-[#F4B942]/50 hover:bg-white/10 focus-within:border-[#F4B942]/70 focus-within:ring-2 focus-within:ring-[#F4B942]/40">
             <Link href={helpUrl} onClick={onNavigate} className="absolute inset-0 rounded-2xl focus:outline-none" aria-label={t('nav.open_help')} />
-            <div className="pointer-events-none relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#FFDC7A]">{t('nav.need_help')}</p><p className="mt-2 text-sm leading-6 text-slate-300">{t('nav.support_help')}</p><span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#FFDC7A]">{t('nav.open_help')} <span aria-hidden="true">→</span></span></div>
-            <a href={`mailto:${supportEmail}`} className="relative z-10 mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm font-bold text-white transition hover:border-[#F4B942]/50 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFDC7A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B132B]"><SupportIcon />{t('nav.contact_support')}</a>
+            <div className="pointer-events-none relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#FFDC7A]">{t('nav.need_help')}</p><p className="mt-1 text-xs leading-5 text-slate-300">{t('nav.support_help')}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#FFDC7A]">{t('nav.open_help')} <span aria-hidden="true">→</span></span></div>
+            <a href={`mailto:${supportEmail}`} className="relative z-10 mt-3 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:border-[#F4B942]/50 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFDC7A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B132B]"><SupportIcon />{t('nav.contact_support')}</a>
         </div>
     </>;
 }

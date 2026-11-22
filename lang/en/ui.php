@@ -8,6 +8,7 @@ return [
         'already_member' => 'This person already has active access to the organization.',
         'invitation_pending' => 'An active invitation is already pending for this email address.',
         'dashboard_disabled' => 'Dashboard access for this customer account is disabled. Existing activated products continue to operate.',
+        'whatsapp_url' => 'Enter a valid international WhatsApp number or approved HTTPS WhatsApp URL.',
     ],
     'flash' => [
         'product_activated' => 'Product activated successfully.',
@@ -28,6 +29,7 @@ return [
         'password_reset_sent' => 'Password reset email sent to the account owner.',
         'products_assigned' => 'The available product range was assigned successfully.',
         'future_inventory_created' => 'The separate future inventory range was created successfully.',
+        'product_status_updated' => 'Product availability updated.',
     ],
     'mail' => [
         'invite_subject' => "You're invited to manage :business on Shiftrix Track",

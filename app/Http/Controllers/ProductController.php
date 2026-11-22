@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\Activation;
 use App\Models\Product;
 use App\Models\ReviewLinkHistory;
+use App\Support\AdminOverviewCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +61,33 @@ class ProductController extends Controller
                 'google_review_url' => $url,
             ]);
         });
+        AdminOverviewCache::forget();
 
         return back()->with('success', __('ui.flash.product_updated'));
+    }
+
+    public function updateStatus(Request $request, Product $product): RedirectResponse
+    {
+        abort_unless($request->user()?->can('update', $product), 403);
+        $data = $request->validate(['status' => ['required', 'in:active,paused']]);
+        abort_unless(in_array($product->status, ['active', 'paused'], true), 422);
+
+        if ($product->status !== $data['status']) {
+            DB::transaction(function () use ($request, $product, $data): void {
+                $action = $data['status'] === 'paused' ? 'paused' : 'reactivated';
+                $product->update(['status' => $data['status']]);
+                Activation::create([
+                    'product_id' => $product->id,
+                    'customer_id' => $product->customer_id,
+                    'actor_user_id' => $request->user()->id,
+                    'action' => $action,
+                    'metadata' => ['source' => 'customer_product_management'],
+                    'activated_at' => now(),
+                ]);
+            });
+        }
+        AdminOverviewCache::forget();
+
+        return back()->with('success', __('ui.flash.product_status_updated'));
     }
 }

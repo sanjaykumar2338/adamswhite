@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ScanEvent;
 use App\Services\AdminAudit;
+use App\Support\AdminOverviewCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,13 @@ class CustomerController extends Controller
         $data['blocked_by'] = $data['status'] === 'blocked' ? $request->user()->id : null;
         $customer->update($data);
         app(AdminAudit::class)->record($request, 'customer.updated', $customer, ['before' => $before, 'changed' => array_keys($customer->getChanges())]);
+        if ($before['status'] !== $data['status']) {
+            app(AdminAudit::class)->record($request, 'customer.status_changed', $customer, ['from' => $before['status'], 'to' => $data['status']]);
+        }
+        if ((int) $before['max_products'] !== (int) $data['max_products']) {
+            app(AdminAudit::class)->record($request, 'customer.limit_changed', $customer, ['from' => (int) $before['max_products'], 'to' => (int) $data['max_products']]);
+        }
+        AdminOverviewCache::forget();
 
         return back()->with('success', __('ui.flash.customer_updated'));
     }

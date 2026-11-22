@@ -40,5 +40,6 @@ return [
         'max_products' => 'limite de produits',
         'support_email' => "e-mail d'assistance",
         'default_product_limit' => 'limite de produits par défaut',
+        'whatsapp_url' => 'coordonnées WhatsApp',
     ],
 ];

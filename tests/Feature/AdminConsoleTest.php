@@ -86,6 +86,8 @@ class AdminConsoleTest extends TestCase
         $this->assertDatabaseHas('customers', ['id' => $customer->id, 'status' => 'blocked', 'max_products' => 25, 'admin_notes' => 'Internal follow-up only']);
         $log = AuditLog::where('action', 'customer.updated')->firstOrFail();
         $this->assertStringNotContainsString('Internal follow-up only', json_encode($log->metadata));
+        $this->assertDatabaseHas('audit_logs', ['action' => 'customer.status_changed', 'subject_id' => $customer->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'customer.limit_changed', 'subject_id' => $customer->id]);
 
         $this->actingAs($admin)->post(route('admin.customers.password-reset', $customer))->assertRedirect();
         Notification::assertSentTo($owner, ResetPassword::class);
@@ -130,6 +132,35 @@ class AdminConsoleTest extends TestCase
         $this->actingAs($admin)->post(route('admin.inventory.future-range'), ['variant' => 'STAND', 'start_sequence' => 901, 'count' => 2, 'confirmation' => 'CREATE FUTURE INVENTORY'])->assertSessionHasNoErrors();
         $this->assertDatabaseHas('products', ['code_id' => 'STAND-00901', 'status' => 'unclaimed']);
         $this->assertDatabaseHas('batches', ['is_future_inventory' => true, 'total_count' => 2]);
+    }
+
+    public function test_whatsapp_setting_is_validated_normalized_and_optional(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->patch(route('admin.settings.update'), ['support_email' => 'support@shiftrix.io', 'whatsapp_url' => 'not-a-number', 'default_product_limit' => 100])->assertSessionHasErrors('whatsapp_url');
+        $this->actingAs($admin)->patch(route('admin.settings.update'), ['support_email' => 'support@shiftrix.io', 'whatsapp_url' => '+33 6 12 34 56 78', 'default_product_limit' => 100])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('system_settings', ['key' => 'whatsapp_url', 'value' => 'https://wa.me/33612345678']);
+    }
+
+    public function test_batches_are_paginated_at_twenty_five_with_global_totals(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        for ($sequence = 1; $sequence <= 26; $sequence++) {
+            $this->product('CARD', $sequence)->update(['batch_id' => Batch::create([
+                'lot_number' => $sequence + 10,
+                'code' => sprintf('LOT-%02d', $sequence + 10),
+                'commercial_count' => 1,
+                'backup_count' => 0,
+                'total_count' => 1,
+                'inventory_import_id' => InventoryImport::first()->id,
+            ])->id]);
+        }
+
+        $this->actingAs($admin)->get(route('admin.batches.index'))->assertInertia(fn ($page) => $page
+            ->has('batches.data', 25)->where('batches.total', 27)->where('summary.total', 26)
+        );
+        $this->actingAs($admin)->get(route('admin.batches.index', ['page' => 2]))->assertInertia(fn ($page) => $page->has('batches.data', 2));
     }
 
     private function customerWithOwner(array $customerOverrides = []): array

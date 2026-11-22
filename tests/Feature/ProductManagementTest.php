@@ -85,6 +85,33 @@ class ProductManagementTest extends TestCase
         );
     }
 
+    public function test_owner_can_pause_and_reactivate_without_changing_identifier_or_nfc_url(): void
+    {
+        [$user, $customer, $batch, $import] = $this->workspace();
+        $product = $this->product($customer, $batch, $import, 'CARD-00001', 'CARD', 1);
+        $originalUrl = $product->nfc_url;
+
+        $this->actingAs($user)->patch(route('products.status', $product), ['status' => 'paused'])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'code_id' => 'CARD-00001', 'status' => 'paused', 'customer_id' => $customer->id]);
+        $this->assertSame($originalUrl, $product->fresh()->nfc_url);
+        $this->assertDatabaseHas('activations', ['product_id' => $product->id, 'action' => 'paused']);
+        $this->get('/configuration?id=CARD-00001')->assertRedirect(route('configuration.unavailable', ['id' => 'CARD-00001']));
+
+        $this->actingAs($user)->patch(route('products.status', $product), ['status' => 'active'])->assertSessionHasNoErrors();
+        $this->assertSame($originalUrl, $product->fresh()->nfc_url);
+        $this->get('/configuration?id=CARD-00001')->assertRedirect('https://g.page/r/example/review');
+    }
+
+    public function test_customer_cannot_pause_another_customers_product(): void
+    {
+        [$user, , $batch, $import] = $this->workspace();
+        $other = Customer::create(['business_name' => 'Other', 'max_products' => 10]);
+        $product = $this->product($other, $batch, $import, 'PLATE-00002', 'PLATE', 2);
+
+        $this->actingAs($user)->patch(route('products.status', $product), ['status' => 'paused'])->assertForbidden();
+        $this->assertSame('active', $product->fresh()->status);
+    }
+
     private function workspace(): array
     {
         $user = User::factory()->create();

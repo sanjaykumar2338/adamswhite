@@ -33,10 +33,12 @@ export default function Track({ code, invalid, product, customer, canActivate, n
 
         <main className="flex flex-1 flex-col">
             <section className={`brand-gradient relative flex overflow-hidden text-white ${hasResult ? '' : 'flex-1'}`}>
+                <img src="/images/marketing/customer-activation.webp" alt="" className="absolute inset-0 h-full w-full object-cover object-center saturate-50" aria-hidden="true" />
+                <span className="absolute inset-0 bg-[#0B132B]/[.82]" aria-hidden="true" />
                 <span className="pointer-events-none absolute -right-40 -top-48 h-[34rem] w-[34rem] rounded-full border border-[#FFDC7A]/15" />
                 <span className="pointer-events-none absolute -bottom-36 left-[42%] h-80 w-80 rounded-full bg-[#F4B942]/10 blur-3xl" />
                 <div className="relative mx-auto grid w-full max-w-7xl gap-10 self-center px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1.08fr_.92fr] lg:items-center lg:gap-16 lg:py-20">
-                    <div><p className="text-xs font-bold tracking-[.3em] text-[#FFDC7A]">{t('track.eyebrow')}</p><h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">{t('track.title')}</h1><p className="mt-5 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">{t('track.intro')}</p>
+                    <div><p className="text-xs font-bold tracking-[.3em] text-[#FFDC7A]">{t('track.eyebrow')}</p><h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">{t('track.activation_headline')}</h1><p className="mt-5 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">{t('track.intro')}</p>
                         <form onSubmit={findProduct} className="mt-8 flex max-w-2xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/10 p-3 shadow-2xl shadow-black/10 backdrop-blur-md sm:flex-row">
                             <label className="sr-only" htmlFor="product-code">{t('track.placeholder')}</label>
                             <input id="product-code" value={lookup} onChange={event => setLookup(event.target.value.toUpperCase())} className="min-h-14 min-w-0 grow rounded-xl border-0 bg-white px-5 py-3 font-mono text-base uppercase tracking-wide text-[#0B132B] shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-[#FFDC7A]" placeholder={t('track.placeholder')} pattern="(CARD|PLATE|STAND)-[0-9]{5}" required />

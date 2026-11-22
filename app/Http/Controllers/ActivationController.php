@@ -6,6 +6,7 @@ use App\Http\Requests\ClaimProductRequest;
 use App\Models\Activation;
 use App\Models\Product;
 use App\Models\ReviewLinkHistory;
+use App\Support\AdminOverviewCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -34,6 +35,7 @@ class ActivationController extends Controller
         });
 
         $request->session()->forget(['pending_product_code', 'url.intended']);
+        AdminOverviewCache::forget();
 
         return to_route('dashboard')->with('success', __('ui.flash.product_activated'));
     }

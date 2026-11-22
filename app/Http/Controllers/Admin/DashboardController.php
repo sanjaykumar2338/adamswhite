@@ -9,7 +9,9 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ScanEvent;
 use App\Models\User;
+use App\Support\AdminOverviewCache;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,8 +20,6 @@ class DashboardController extends Controller
 {
     public function __invoke(): Response
     {
-        $totalProducts = Product::count();
-        $claimedProducts = Product::whereNotNull('customer_id')->count();
         $firstChartDay = CarbonImmutable::today()->subDays(29);
         $firstSevenDay = CarbonImmutable::today()->subDays(6);
         $today = CarbonImmutable::today()->startOfDay();
@@ -65,24 +65,37 @@ class DashboardController extends Controller
             ->take(8)
             ->values();
 
-        return Inertia::render('Admin/Dashboard', [
-            'metrics' => [
-                'customers' => Customer::count(),
-                'activeCustomers' => Customer::where('status', 'active')->count(),
-                'disabledCustomers' => Customer::where('status', 'blocked')->count(),
+        if (app()->runningUnitTests()) {
+            AdminOverviewCache::forget();
+        }
+        $metrics = Cache::remember(AdminOverviewCache::KEY, now()->addSeconds(45), function () use ($today, $firstSevenDay, $firstChartDay): array {
+            $products = Product::query()->selectRaw("COUNT(*) total, SUM(CASE WHEN customer_id IS NOT NULL THEN 1 ELSE 0 END) claimed, SUM(CASE WHEN customer_id IS NULL AND status = 'unclaimed' THEN 1 ELSE 0 END) available, SUM(CASE WHEN status = 'disabled' THEN 1 ELSE 0 END) disabled, SUM(CASE WHEN customer_id IS NOT NULL AND (google_review_url IS NULL OR google_review_url = '') THEN 1 ELSE 0 END) missing_review")->first();
+            $customers = Customer::query()->selectRaw("COUNT(*) total, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) active, SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END) blocked")->first();
+            $scans = ScanEvent::query()->where('result', 'redirected')->where('is_probable_bot', false)->selectRaw('SUM(CASE WHEN scanned_at >= ? THEN 1 ELSE 0 END) today, SUM(CASE WHEN scanned_at >= ? THEN 1 ELSE 0 END) seven, SUM(CASE WHEN scanned_at >= ? THEN 1 ELSE 0 END) thirty', [$today, $firstSevenDay->startOfDay(), $firstChartDay->startOfDay()])->first();
+            $totalProducts = (int) $products->total;
+            $claimedProducts = (int) $products->claimed;
+
+            return [
+                'customers' => (int) $customers->total,
+                'activeCustomers' => (int) $customers->active,
+                'disabledCustomers' => (int) $customers->blocked,
                 'multiProductCustomers' => Customer::has('products', '>', 1)->count(),
                 'activeManagers' => DB::table('customer_memberships')->where('role', 'manager')->where('status', 'active')->count(),
                 'users' => User::count(),
                 'totalProducts' => $totalProducts,
                 'claimed' => $claimedProducts,
-                'available' => Product::whereNull('customer_id')->where('status', 'unclaimed')->count(),
-                'disabled' => Product::where('status', 'disabled')->count(),
-                'missingReview' => Product::whereNotNull('customer_id')->where(fn ($query) => $query->whereNull('google_review_url')->orWhere('google_review_url', ''))->count(),
-                'scansToday' => ScanEvent::where('scanned_at', '>=', $today)->where('result', 'redirected')->where('is_probable_bot', false)->count(),
-                'scans7d' => ScanEvent::where('scanned_at', '>=', $firstSevenDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->count(),
-                'scans30d' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->count(),
+                'available' => (int) $products->available,
+                'disabled' => (int) $products->disabled,
+                'missingReview' => (int) $products->missing_review,
+                'scansToday' => (int) $scans->today,
+                'scans7d' => (int) $scans->seven,
+                'scans30d' => (int) $scans->thirty,
                 'claimRate' => $totalProducts > 0 ? round(($claimedProducts / $totalProducts) * 100, 1) : 0,
-            ],
+            ];
+        });
+
+        return Inertia::render('Admin/Dashboard', [
+            'metrics' => $metrics,
             'scanSeries' => $scanSeries,
             'variantDistribution' => Product::query()
                 ->select('variant')
@@ -97,8 +110,8 @@ class DashboardController extends Controller
                 ->latest()
                 ->limit(6)
                 ->get(['id', 'business_name', 'status', 'max_products', 'created_at']),
-            'deviceDistribution' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->get(['device_category'])->groupBy(fn ($event) => $event->device_category ?: 'unknown')->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])->values(),
-            'countryDistribution' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->get(['country_code'])->groupBy(fn ($event) => $event->country_code ?: 'unknown')->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])->sortByDesc('total')->take(8)->values(),
+            'deviceDistribution' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->selectRaw("COALESCE(device_category, 'unknown') label, COUNT(*) total")->groupBy('label')->get(),
+            'countryDistribution' => ScanEvent::where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)->selectRaw("COALESCE(country_code, 'unknown') label, COUNT(*) total")->groupBy('label')->orderByDesc('total')->limit(8)->get(),
             'topProducts' => ScanEvent::query()->join('products', 'products.id', '=', 'scan_events.product_id')->where('scan_events.scanned_at', '>=', $firstChartDay->startOfDay())->where('scan_events.result', 'redirected')->where('scan_events.is_probable_bot', false)->selectRaw('products.id, products.code_id, COUNT(*) total')->groupBy('products.id', 'products.code_id')->orderByDesc('total')->limit(5)->get(),
             'topCustomers' => ScanEvent::query()->join('customers', 'customers.id', '=', 'scan_events.customer_id')->where('scan_events.scanned_at', '>=', $firstChartDay->startOfDay())->where('scan_events.result', 'redirected')->where('scan_events.is_probable_bot', false)->selectRaw('customers.id, customers.business_name, COUNT(*) total')->groupBy('customers.id', 'customers.business_name')->orderByDesc('total')->limit(5)->get(),
             'recentActions' => AuditLog::with('actor:id,name')->latest()->limit(6)->get(),

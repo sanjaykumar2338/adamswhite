@@ -23,7 +23,7 @@ export default function ScanActivityChart({ series, locale, t, defaultRange = 30
             parentHeightOffset: 0,
             fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
             foreColor: '#64748b',
-            animations: { enabled: true, speed: 450 },
+            animations: { enabled: true, speed: 600, dynamicAnimation: { enabled: true, speed: 350 } },
             dropShadow: { enabled: true, top: 5, left: 0, blur: 7, color: '#F4B942', opacity: 0.14 },
         },
         colors: ['#F4B942'],

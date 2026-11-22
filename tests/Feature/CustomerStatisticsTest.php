@@ -87,6 +87,24 @@ class CustomerStatisticsTest extends TestCase
         $this->assertFalse($event->is_probable_bot);
     }
 
+    public function test_rankings_use_only_named_owned_products_and_eligible_selected_period_scans(): void
+    {
+        CarbonImmutable::setTestNow('2026-11-21 12:00:00');
+        [$user, $customer, $product] = $this->workspace();
+        $product->update(['display_name' => 'Alice']);
+        $this->scan($product, $customer, '2026-11-21 10:00:00');
+        $this->scan($product, $customer, '2026-11-20 10:00:00');
+        $this->scan($product, $customer, '2026-11-20 10:10:00', true);
+        [, $otherCustomer, $otherProduct] = $this->workspace(2);
+        $otherProduct->update(['display_name' => 'Other staff']);
+        $this->scan($otherProduct, $otherCustomer, '2026-11-21 11:00:00');
+
+        $this->actingAs($user)->get(route('statistics.index', ['days' => 7]))->assertInertia(fn ($page) => $page
+            ->has('topProducts', 1)->where('topProducts.0.code_id', $product->code_id)->where('topProducts.0.total', 2)
+            ->has('topStaff', 1)->where('topStaff.0.display_name', 'Alice')->where('topStaff.0.total', 2)
+        );
+    }
+
     private function workspace(int $suffix = 1): array
     {
         $user = User::factory()->create();

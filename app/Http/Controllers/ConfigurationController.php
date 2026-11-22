@@ -35,7 +35,7 @@ class ConfigurationController extends Controller
             return redirect()->away($product->google_review_url, 302);
         }
 
-        if ($product->status === 'disabled') {
+        if (in_array($product->status, ['disabled', 'paused'], true)) {
             if ($request->isMethod('GET')) {
                 $recorder->record($product, $request, 'blocked', $started);
             }

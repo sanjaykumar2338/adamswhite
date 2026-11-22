@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\SystemSetting;
+use Illuminate\Support\Facades\Schema;
 
 class SupportContact
 {
@@ -18,7 +19,16 @@ class SupportContact
 
     public static function whatsappUrl(): ?string
     {
-        $configured = trim((string) config('services.shiftrix.whatsapp_url'));
+        $configured = Schema::hasTable('system_settings')
+            ? SystemSetting::valueFor('whatsapp_url', config('services.shiftrix.whatsapp_url'))
+            : config('services.shiftrix.whatsapp_url');
+
+        return self::normalizeWhatsapp($configured);
+    }
+
+    public static function normalizeWhatsapp(mixed $value): ?string
+    {
+        $configured = trim((string) $value);
 
         if ($configured === '') {
             return null;

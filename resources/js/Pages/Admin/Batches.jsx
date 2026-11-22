@@ -1,26 +1,259 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { useTranslation } from '@/i18n';
-import { Head, useForm } from '@inertiajs/react';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { useTranslation } from "@/i18n";
+import { Head, Link, useForm } from "@inertiajs/react";
 
-export default function Batches({ batches }) {
+export default function Batches({ batches, summary }) {
     const { locale, t } = useTranslation();
-    const form = useForm({ variant: 'CARD', start_sequence: '', count: '', confirmation: '' });
-    const submit = (event) => { event.preventDefault(); form.post(route('admin.inventory.future-range'), { preserveScroll: true, onSuccess: () => form.reset('start_sequence', 'count', 'confirmation') }); };
-    const total = batches.reduce((sum, batch) => sum + Number(batch.products_count), 0);
-    const claimed = batches.reduce((sum, batch) => sum + Number(batch.assigned_count), 0);
+    const form = useForm({
+        variant: "CARD",
+        start_sequence: "",
+        count: "",
+        confirmation: "",
+    });
+    const submit = (event) => {
+        event.preventDefault();
+        form.post(route("admin.inventory.future-range"), {
+            preserveScroll: true,
+            onSuccess: () =>
+                form.reset("start_sequence", "count", "confirmation"),
+        });
+    };
+    const rows = batches.data;
 
-    return <AuthenticatedLayout>
-        <Head title={t('admin.batches')}/>
-        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
-            <section className="premium-hero rounded-3xl p-7 text-white shadow-xl shadow-[#0B132B]/10 sm:p-9"><p className="text-xs font-black uppercase tracking-[.2em] text-[#FFDC7A]" translate="no">SHIFTRIX TRACK</p><div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-3xl font-black sm:text-4xl">{t('admin.batches')}</h1><p className="mt-2 max-w-2xl leading-7 text-slate-300">{t('admin.batches_help')}</p></div><div className="grid grid-cols-2 gap-3"><HeroCount label={t('admin.total_inventory')} value={total} locale={locale}/><HeroCount label={t('admin.claimed')} value={claimed} locale={locale}/></div></div></section>
-            <div className="mt-5 grid gap-5 xl:grid-cols-[1.45fr_.65fr]">
-                <section className="premium-panel overflow-hidden rounded-3xl"><div className="border-b border-slate-100 px-5 py-4 sm:px-6"><h2 className="text-xl font-black text-[#0B132B]">{t('admin.original_inventory')}</h2></div><div className="divide-y divide-slate-100">{batches.map((batch) => <article className="grid gap-4 p-5 transition hover:bg-slate-50/70 sm:grid-cols-[minmax(0,1fr)_repeat(3,minmax(6rem,auto))] sm:items-center sm:px-6" key={batch.id}><div><div className="flex flex-wrap items-center gap-2"><p className="font-black text-[#0B132B]">{batch.code}</p>{batch.is_future_inventory && <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[.65rem] font-black text-amber-900">{t('admin.future_inventory')}</span>}</div><p className="mt-1 text-xs text-slate-500">{batch.is_future_inventory ? t('admin.future_inventory') : t('admin.original_inventory')}</p></div><Count label={t('admin.total_inventory')} value={batch.products_count} locale={locale}/><Count label={t('admin.claimed')} value={batch.assigned_count} locale={locale}/><Count label={t('admin.available')} value={batch.available_count} locale={locale}/></article>)}</div></section>
-                <form onSubmit={submit} className="premium-panel h-fit rounded-3xl p-6 sm:p-7"><span className="metallic-gold flex h-11 w-11 items-center justify-center rounded-2xl font-black text-[#0B132B]">+</span><h2 className="mt-4 text-xl font-black text-[#0B132B]">{t('admin.create_future_range')}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{t('admin.future_warning')}</p><Field label={t('common.variant')} error={form.errors.variant}><select className="premium-input" value={form.data.variant} onChange={(event) => form.setData('variant', event.target.value)}>{['CARD', 'PLATE', 'STAND'].map((variant) => <option key={variant}>{variant}</option>)}</select></Field><Field label={t('admin.start_sequence')} error={form.errors.start_sequence}><input className="premium-input" type="number" min="1" max="99999" value={form.data.start_sequence} onChange={(event) => form.setData('start_sequence', event.target.value)}/></Field><Field label={t('admin.count')} error={form.errors.count}><input className="premium-input" type="number" min="1" max="1000" value={form.data.count} onChange={(event) => form.setData('count', event.target.value)}/></Field><Field label={t('admin.type_confirmation')} error={form.errors.confirmation}><input className="premium-input font-mono" value={form.data.confirmation} onChange={(event) => form.setData('confirmation', event.target.value)} placeholder="CREATE FUTURE INVENTORY"/></Field><button disabled={form.processing} className="gold-button mt-6 w-full rounded-xl px-4 py-3 font-black disabled:opacity-40">{t('admin.create_range')}</button></form>
+    return (
+        <AuthenticatedLayout>
+            <Head title={t("admin.batches")} />
+            <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+                <section className="premium-hero rounded-3xl p-7 text-white shadow-xl shadow-[#0B132B]/10 sm:p-9">
+                    <p
+                        className="text-xs font-black uppercase tracking-[.2em] text-[#FFDC7A]"
+                        translate="no"
+                    >
+                        SHIFTRIX TRACK
+                    </p>
+                    <div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <h1 className="text-3xl font-black sm:text-4xl">
+                                {t("admin.batches")}
+                            </h1>
+                            <p className="mt-2 max-w-2xl leading-7 text-slate-300">
+                                {t("admin.batches_help")}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <HeroCount
+                                label={t("admin.total_inventory")}
+                                value={summary.total}
+                                locale={locale}
+                            />
+                            <HeroCount
+                                label={t("admin.claimed")}
+                                value={summary.claimed}
+                                locale={locale}
+                            />
+                        </div>
+                    </div>
+                </section>
+                <div className="mt-5 grid gap-5 xl:grid-cols-[1.45fr_.65fr]">
+                    <section className="premium-panel overflow-hidden rounded-3xl">
+                        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+                            <h2 className="text-xl font-black text-[#0B132B]">
+                                {t("admin.original_inventory")}
+                            </h2>
+                        </div>
+                        <div className="divide-y divide-slate-100">
+                            {rows.map((batch) => (
+                                <article
+                                    className="grid gap-4 p-5 transition hover:bg-slate-50/70 sm:grid-cols-[minmax(0,1fr)_repeat(3,minmax(6rem,auto))] sm:items-center sm:px-6"
+                                    key={batch.id}
+                                >
+                                    <div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <p className="font-black text-[#0B132B]">
+                                                {batch.code}
+                                            </p>
+                                            {batch.is_future_inventory && (
+                                                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[.65rem] font-black text-amber-900">
+                                                    {t(
+                                                        "admin.future_inventory",
+                                                    )}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="mt-1 text-xs text-slate-500">
+                                            {batch.is_future_inventory
+                                                ? t("admin.future_inventory")
+                                                : t("admin.original_inventory")}
+                                        </p>
+                                    </div>
+                                    <Count
+                                        label={t("admin.total_inventory")}
+                                        value={batch.products_count}
+                                        locale={locale}
+                                    />
+                                    <Count
+                                        label={t("admin.claimed")}
+                                        value={batch.assigned_count}
+                                        locale={locale}
+                                    />
+                                    <Count
+                                        label={t("admin.available")}
+                                        value={batch.available_count}
+                                        locale={locale}
+                                    />
+                                </article>
+                            ))}
+                        </div>
+                        <Pagination links={batches.links} t={t} />
+                    </section>
+                    <form
+                        onSubmit={submit}
+                        className="premium-panel h-fit rounded-3xl p-6 sm:p-7"
+                    >
+                        <span className="metallic-gold flex h-11 w-11 items-center justify-center rounded-2xl font-black text-[#0B132B]">
+                            +
+                        </span>
+                        <h2 className="mt-4 text-xl font-black text-[#0B132B]">
+                            {t("admin.create_future_range")}
+                        </h2>
+                        <p className="mt-2 text-sm leading-6 text-slate-500">
+                            {t("admin.future_warning")}
+                        </p>
+                        <Field
+                            label={t("common.variant")}
+                            error={form.errors.variant}
+                        >
+                            <select
+                                className="premium-input"
+                                value={form.data.variant}
+                                onChange={(event) =>
+                                    form.setData("variant", event.target.value)
+                                }
+                            >
+                                {["CARD", "PLATE", "STAND"].map((variant) => (
+                                    <option key={variant}>{variant}</option>
+                                ))}
+                            </select>
+                        </Field>
+                        <Field
+                            label={t("admin.start_sequence")}
+                            error={form.errors.start_sequence}
+                        >
+                            <input
+                                className="premium-input"
+                                type="number"
+                                min="1"
+                                max="99999"
+                                value={form.data.start_sequence}
+                                onChange={(event) =>
+                                    form.setData(
+                                        "start_sequence",
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </Field>
+                        <Field
+                            label={t("admin.count")}
+                            error={form.errors.count}
+                        >
+                            <input
+                                className="premium-input"
+                                type="number"
+                                min="1"
+                                max="1000"
+                                value={form.data.count}
+                                onChange={(event) =>
+                                    form.setData("count", event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            label={t("admin.type_confirmation")}
+                            error={form.errors.confirmation}
+                        >
+                            <input
+                                className="premium-input font-mono"
+                                value={form.data.confirmation}
+                                onChange={(event) =>
+                                    form.setData(
+                                        "confirmation",
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="CREATE FUTURE INVENTORY"
+                            />
+                        </Field>
+                        <button
+                            disabled={form.processing}
+                            className="gold-button mt-6 w-full rounded-xl px-4 py-3 font-black disabled:opacity-40"
+                        >
+                            {t("admin.create_range")}
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
-    </AuthenticatedLayout>;
+        </AuthenticatedLayout>
+    );
 }
 
-function HeroCount({ label, value, locale }) { return <div className="rounded-2xl border border-white/10 bg-white/[.08] px-4 py-3 backdrop-blur"><p className="text-xs font-bold text-slate-300">{label}</p><p className="mt-1 text-2xl font-black text-[#FFDC7A]">{Number(value).toLocaleString(locale)}</p></div>; }
-function Count({ label, value, locale }) { return <div className="rounded-xl bg-slate-50 px-3 py-2 sm:bg-transparent sm:px-0 sm:py-0"><p className="text-[.65rem] font-bold uppercase tracking-wider text-slate-400">{label}</p><p className="mt-1 text-lg font-black text-[#0B132B]">{Number(value).toLocaleString(locale)}</p></div>; }
-function Field({ label, error, children }) { return <label className="mt-4 block text-sm font-bold text-[#0B132B]">{label}{children}{error && <span className="mt-1 block text-xs text-red-600">{error}</span>}</label>; }
+function HeroCount({ label, value, locale }) {
+    return (
+        <div className="rounded-2xl border border-white/10 bg-white/[.08] px-4 py-3 backdrop-blur">
+            <p className="text-xs font-bold text-slate-300">{label}</p>
+            <p className="mt-1 text-2xl font-black text-[#FFDC7A]">
+                {Number(value).toLocaleString(locale)}
+            </p>
+        </div>
+    );
+}
+function Count({ label, value, locale }) {
+    return (
+        <div className="rounded-xl bg-slate-50 px-3 py-2 sm:bg-transparent sm:px-0 sm:py-0">
+            <p className="text-[.65rem] font-bold uppercase tracking-wider text-slate-400">
+                {label}
+            </p>
+            <p className="mt-1 text-lg font-black text-[#0B132B]">
+                {Number(value).toLocaleString(locale)}
+            </p>
+        </div>
+    );
+}
+function Field({ label, error, children }) {
+    return (
+        <label className="mt-4 block text-sm font-bold text-[#0B132B]">
+            {label}
+            {children}
+            {error && (
+                <span className="mt-1 block text-xs text-red-600">{error}</span>
+            )}
+        </label>
+    );
+}
+function Pagination({ links, t }) {
+    if (links.length <= 3) return null;
+    return (
+        <nav
+            aria-label={t("admin.pagination")}
+            className="flex flex-wrap justify-center gap-2 border-t border-slate-100 p-4"
+        >
+            {links.map((link, index) =>
+                link.url ? (
+                    <Link
+                        key={index}
+                        href={link.url}
+                        preserveScroll
+                        className={`rounded-lg px-3 py-2 text-sm font-bold ${link.active ? "bg-[#0B132B] text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-[#F4B942]"}`}
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ) : (
+                    <span
+                        key={index}
+                        className="rounded-lg px-3 py-2 text-sm text-slate-300"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ),
+            )}
+        </nav>
+    );
+}

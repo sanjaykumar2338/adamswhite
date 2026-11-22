@@ -5,7 +5,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 export default function Settings({ settings }) {
     const { t } = useTranslation();
     const flash = usePage().props.flash;
-    const form = useForm({ support_email: settings.support_email, default_product_limit: settings.default_product_limit || 100 });
+    const form = useForm({ support_email: settings.support_email, whatsapp_url: settings.whatsapp_url || '', default_product_limit: settings.default_product_limit || 100 });
 
     return <AuthenticatedLayout>
         <Head title={t('common.settings')} />
@@ -23,6 +23,7 @@ export default function Settings({ settings }) {
                     <p className="mt-2 text-sm leading-6 text-slate-500">{t('admin.settings_help')}</p>
                     <div className="mt-6 grid gap-5 sm:grid-cols-2">
                         <Field label={t('common.support_email')} error={form.errors.support_email}><input type="email" required className="premium-input" value={form.data.support_email} onChange={(event) => form.setData('support_email', event.target.value)}/></Field>
+                        <Field label={t('common.whatsapp_support')} error={form.errors.whatsapp_url}><input type="text" className="premium-input" value={form.data.whatsapp_url} onChange={(event) => form.setData('whatsapp_url', event.target.value)} placeholder="https://wa.me/33612345678"/><span className="mt-1 block text-xs font-medium leading-5 text-slate-500">{t('admin.whatsapp_help')}</span></Field>
                         <Field label={t('common.default_product_limit')} error={form.errors.default_product_limit}><input type="number" min="1" max="10000" required className="premium-input" value={form.data.default_product_limit} onChange={(event) => form.setData('default_product_limit', event.target.value)}/></Field>
                     </div>
                     <div className="mt-7 flex justify-end border-t border-slate-100 pt-5"><button disabled={form.processing} className="gold-button rounded-xl px-6 py-3 text-sm font-black disabled:opacity-50">{t('admin.save_settings')}</button></div>

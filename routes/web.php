@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/products', [ProductController::class, 'index'])->middleware('customer.access')->name('products.index');
     Route::post('/activations', [ActivationController::class, 'store'])->middleware(['customer.access', 'throttle:20,1'])->name('activations.store');
     Route::patch('/products/{product}', [ProductController::class, 'update'])->middleware('customer.access')->name('products.update');
+    Route::patch('/products/{product}/status', [ProductController::class, 'updateStatus'])->middleware('customer.access')->name('products.status');
     Route::get('/statistics', CustomerStatisticsController::class)->middleware('customer.access')->name('statistics.index');
     Route::get('/statistics/export', StatisticsExportController::class)->middleware('customer.access')->name('statistics.export');
     Route::get('/team', [TeamController::class, 'index'])->middleware('customer.access')->name('team.index');

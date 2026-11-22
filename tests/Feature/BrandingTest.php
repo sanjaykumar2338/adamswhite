@@ -33,6 +33,21 @@ class BrandingTest extends TestCase
         $this->assertStringContainsString('"name": "Shiftrix Track"', file_get_contents(public_path('site.webmanifest')));
     }
 
+    public function test_client_photography_is_optimized_and_bilingual_marketing_copy_is_present(): void
+    {
+        foreach (['customer-login.webp', 'customer-activation.webp', 'admin-portal.webp'] as $asset) {
+            $path = public_path('images/marketing/'.$asset);
+            $this->assertFileExists($path);
+            $this->assertLessThan(200 * 1024, filesize($path), $asset.' must remain below 200 KB.');
+        }
+
+        $translations = file_get_contents(resource_path('js/i18n.js'));
+        $this->assertStringContainsString('Turn Every Customer Visit Into 5-Star Reviews & Measurable Team Performance.', $translations);
+        $this->assertStringContainsString("Transformez chaque visite client en avis 5 étoiles et en performance d'équipe mesurable.", $translations);
+        $this->assertStringContainsString('Activate Your SHIFTRIX Asset in 30 Seconds.', $translations);
+        $this->assertStringContainsString('Activez votre produit SHIFTRIX en 30 secondes.', $translations);
+    }
+
     public function test_visible_application_branding_does_not_reference_shiftrix_pro(): void
     {
         foreach ([resource_path('js'), resource_path('views'), lang_path(), public_path('images')] as $directory) {

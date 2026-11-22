@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\InventoryImport;
 use App\Models\Product;
 use App\Services\AdminAudit;
+use App\Support\AdminOverviewCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class ProductController extends Controller
             'search' => ['nullable', 'string', 'max:32'],
             'variant' => ['nullable', 'in:'.implode(',', Product::VARIANTS)],
             'batch' => ['nullable', 'integer', 'exists:batches,id'],
-            'status' => ['nullable', 'in:unclaimed,active,disabled'],
+            'status' => ['nullable', 'in:unclaimed,active,paused,disabled'],
             'unit_type' => ['nullable', 'in:commercial,backup'],
             'customer' => ['nullable', 'integer', 'exists:customers,id'],
         ]);
@@ -65,6 +66,7 @@ class ProductController extends Controller
             $product->update(['customer_id' => null, 'status' => 'unclaimed', 'google_review_url' => null, 'claimed_at' => null, 'disabled_at' => null]);
             app(AdminAudit::class)->record($request, 'product.reset', $product, ['code_id' => $product->code_id]);
         });
+        AdminOverviewCache::forget();
 
         return back()->with('success', __('ui.flash.product_reset'));
     }
@@ -86,6 +88,7 @@ class ProductController extends Controller
             Product::whereKey($products->modelKeys())->update(['customer_id' => $customer->id, 'status' => 'active', 'claimed_at' => now()]);
             app(AdminAudit::class)->record($request, 'products.range_assigned', $customer, ['start_code' => $data['start_code'], 'end_code' => $data['end_code'], 'count' => $expected]);
         });
+        AdminOverviewCache::forget();
 
         return back()->with('success', __('ui.flash.products_assigned'));
     }
@@ -123,6 +126,7 @@ class ProductController extends Controller
             }
             app(AdminAudit::class)->record($request, 'inventory.future_range_created', $batch, ['variant' => $data['variant'], 'start_sequence' => $data['start_sequence'], 'count' => $codes->count()]);
         });
+        AdminOverviewCache::forget();
 
         return back()->with('success', __('ui.flash.future_inventory_created'));
     }
