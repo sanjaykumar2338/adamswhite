@@ -101,7 +101,7 @@ The concrete host command sequence and Cloudflare variables are documented in `d
 Do this only under separate client approval:
 
 1. Configure the same strong `SHIFTRIX_EDGE_SECRET` value in the Worker secret store and the Laravel production environment.
-2. Configure `SAAS_ORIGIN=https://app.shiftrix.io` and an optional non-sensitive `ORIGIN_HOST` only as documented.
+2. Configure `SHIFTRIX_ORIGIN=https://app.shiftrix.io` in the Worker and set the matching edge secret only as documented.
 3. Grant the deployer Worker Scripts edit and route edit access limited to the relevant zone; zone read is also required for route management. Do not grant account-wide DNS editing.
 4. Deploy the Worker and bind only `shiftrix.io/configuration*`. The Worker itself permits only GET/HEAD and exact `/configuration` or `/configuration/`; every other path is fetched from Shopify unchanged.
 5. Publish only the reviewed tutorial CTA change. Preserve the original tutorial video, typography, and all other sections.
