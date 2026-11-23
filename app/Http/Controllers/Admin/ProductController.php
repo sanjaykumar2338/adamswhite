@@ -122,7 +122,7 @@ class ProductController extends Controller
             $batch = Batch::create(['lot_number' => $lot, 'code' => 'FUT-'.str_pad((string) $lot, 3, '0', STR_PAD_LEFT), 'commercial_count' => $codes->count(), 'backup_count' => 0, 'total_count' => $codes->count(), 'inventory_import_id' => $import->id, 'is_future_inventory' => true]);
             $firstSourceLine = (int) (Product::query()->orderByDesc('source_line')->lockForUpdate()->value('source_line') ?? 0) + 1;
             foreach ($codes as $index => $code) {
-                Product::create(['batch_id' => $batch->id, 'inventory_import_id' => $import->id, 'code_id' => $code, 'variant' => $data['variant'], 'code_sequence' => $data['start_sequence'] + $index, 'unit_type' => 'commercial', 'position_in_batch' => $index + 1, 'source_line' => $firstSourceLine + $index, 'status' => 'unclaimed']);
+                Product::create(['batch_id' => $batch->id, 'inventory_import_id' => $import->id, 'code_id' => $code, 'nfc_url' => Product::canonicalNfcUrl($code), 'variant' => $data['variant'], 'code_sequence' => $data['start_sequence'] + $index, 'unit_type' => 'commercial', 'position_in_batch' => $index + 1, 'source_line' => $firstSourceLine + $index, 'status' => 'unclaimed']);
             }
             app(AdminAudit::class)->record($request, 'inventory.future_range_created', $batch, ['variant' => $data['variant'], 'start_sequence' => $data['start_sequence'], 'count' => $codes->count()]);
         });

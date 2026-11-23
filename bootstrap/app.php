@@ -2,7 +2,6 @@
 
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCustomerAccess;
-use App\Http\Middleware\EnsureEdgeProxy;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -18,7 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(EnsureEdgeProxy::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->alias([
             'admin' => EnsureAdmin::class,

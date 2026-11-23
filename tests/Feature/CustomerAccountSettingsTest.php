@@ -145,7 +145,7 @@ class CustomerAccountSettingsTest extends TestCase
 
         $this->assertNotNull($owner->fresh());
         $this->assertNotNull($product->fresh());
-        $this->assertSame('https://shiftrix.io/configuration?id=STAND-00003', $product->fresh()->nfc_url);
+        $this->assertSame('https://app.shiftrix.io/?id=STAND-00003', $product->fresh()->nfc_url);
         $this->assertDatabaseCount('scan_events', 1);
         $this->assertDatabaseHas('account_deletion_requests', ['user_id' => $owner->id, 'customer_id' => $customer->id, 'status' => 'pending']);
     }

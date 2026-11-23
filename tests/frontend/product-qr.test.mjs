@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createProductQrDownload } from '../../resources/js/lib/productQr.js';
 
 test('generates a downloadable PNG QR from the unchanged NFC URL', async () => {
-    const nfcUrl = 'https://shiftrix.io/configuration?id=CARD-00001';
+    const nfcUrl = 'https://app.shiftrix.io/?id=CARD-00001';
     const result = await createProductQrDownload('CARD-00001', nfcUrl);
 
     assert.equal(result.filename, 'CARD-00001-qr.png');

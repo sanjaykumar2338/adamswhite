@@ -11,7 +11,7 @@ class Product extends Model
     public const VARIANTS = ['CARD', 'PLATE', 'STAND'];
 
     protected $fillable = [
-        'batch_id', 'inventory_import_id', 'customer_id', 'location_id', 'code_id', 'variant', 'display_name', 'code_sequence',
+        'batch_id', 'inventory_import_id', 'customer_id', 'location_id', 'code_id', 'nfc_url', 'variant', 'display_name', 'code_sequence',
         'unit_type', 'position_in_batch', 'source_line', 'status', 'google_review_url',
         'claimed_at', 'disabled_at', 'last_scanned_at',
     ];
@@ -61,8 +61,13 @@ class Product extends Model
         return asset('images/products/'.strtolower($this->variant).'.jpg');
     }
 
-    public function getNfcUrlAttribute(): string
+    public static function canonicalNfcUrl(string $codeId): string
     {
-        return 'https://shiftrix.io/configuration?id='.rawurlencode($this->code_id);
+        return rtrim((string) config('services.shiftrix.nfc_base_url', 'https://app.shiftrix.io/'), '/').'/?id='.rawurlencode($codeId);
+    }
+
+    public function getNfcUrlAttribute(?string $value): string
+    {
+        return filled($value) ? $value : self::canonicalNfcUrl($this->code_id);
     }
 }

@@ -77,7 +77,7 @@ class InventoryImportService
             if (! $variant || ! preg_match('/^(CARD|PLATE|STAND)-(\d{5})$/', (string) $code, $match) || $match[1] !== $variant) {
                 $errors[] = "Row {$row}: malformed product identifier.";
             }
-            if ((string) $url !== 'https://shiftrix.io/configuration?id='.(string) $code) {
+            if ((string) $url !== Product::canonicalNfcUrl((string) $code)) {
                 $errors[] = "Row {$row}: invalid activation URL.";
             }
             if (! $unitType || ($positionInBatch <= 400) !== ($unitType === 'commercial')) {
@@ -105,6 +105,7 @@ class InventoryImportService
             $products[] = [
                 'lot' => $lot,
                 'code_id' => $code,
+                'nfc_url' => (string) $url,
                 'variant' => $variant,
                 'code_sequence' => $codeSequence,
                 'unit_type' => $unitType,

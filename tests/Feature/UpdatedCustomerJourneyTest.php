@@ -41,19 +41,18 @@ class UpdatedCustomerJourneyTest extends TestCase
         ]);
     }
 
-    public function test_track_recognizes_all_inventory_variants_without_counting_another_scan(): void
+    public function test_track_recognizes_all_inventory_variants_and_shows_the_tutorial(): void
     {
         foreach (['CARD', 'PLATE', 'STAND'] as $index => $variant) {
             $product = $this->product($variant, $index + 1);
             $this->get('/?id='.$product->code_id)->assertOk()->assertInertia(fn ($page) => $page
-                ->component('Track/Index')
+                ->component('Track/Tutorial')
                 ->where('product.code_id', $product->code_id)
                 ->where('product.variant', $variant)
-                ->where('product.is_available', true)
-                ->where('invalid', false));
+                ->where('continueUrl', '/activate?id='.$product->code_id));
         }
 
-        $this->assertDatabaseCount('scan_events', 0);
+        $this->assertDatabaseCount('scan_events', 3);
     }
 
     public function test_manual_unknown_product_is_rejected_by_inventory_lookup(): void
@@ -71,11 +70,11 @@ class UpdatedCustomerJourneyTest extends TestCase
 
         $this->get('/?id='.$product->code_id);
         $this->post('/login', ['email' => $user->email, 'password' => 'password'])
-            ->assertRedirect('/?id='.$product->code_id);
+            ->assertRedirect('/activate?id='.$product->code_id);
 
-        $this->get('/?id='.$product->code_id)->assertInertia(fn ($page) => $page->where('needsVerification', true));
+        $this->get('/activate?id='.$product->code_id)->assertInertia(fn ($page) => $page->where('needsVerification', true));
         $verificationUrl = URL::temporarySignedRoute('verification.verify', now()->addMinutes(60), ['id' => $user->id, 'hash' => sha1($user->email)]);
-        $this->get($verificationUrl)->assertRedirect('/?id='.$product->code_id);
+        $this->get($verificationUrl)->assertRedirect('/activate?id='.$product->code_id);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
     }
 

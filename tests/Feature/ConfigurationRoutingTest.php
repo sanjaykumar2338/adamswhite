@@ -31,8 +31,13 @@ class ConfigurationRoutingTest extends TestCase
             $product = $this->product($variant, $sequence, ['unit_type' => $unitType]);
             $query = http_build_query(['id' => $product->code_id, 'utm_source' => 'nfc', 'campaign' => 'launch']);
 
-            $this->get("/configuration?{$query}")
-                ->assertRedirect("https://shiftrix.io/pages/how-to-configure?{$query}");
+            $this->get("/?{$query}")
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Track/Tutorial')
+                    ->where('product.code_id', $product->code_id)
+                    ->where('product.variant', $variant)
+                    ->where('continueUrl', "/activate?{$query}"));
 
             $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'unclaimed']);
         }
@@ -45,7 +50,7 @@ class ConfigurationRoutingTest extends TestCase
         $customer = Customer::create(['business_name' => 'Active Business', 'status' => 'active']);
         $product = $this->product('CARD', 1, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/direct/review']);
 
-        $this->get('/configuration?id=CARD-00001&utm_source=nfc')
+        $this->get('/?id=CARD-00001&utm_source=nfc')
             ->assertRedirect('https://g.page/r/direct/review');
 
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'customer_id' => $customer->id, 'result' => 'redirected']);
@@ -54,21 +59,23 @@ class ConfigurationRoutingTest extends TestCase
 
     public function test_invalid_unknown_products_fail_safely_while_blocked_customer_products_keep_working(): void
     {
-        $this->get('/configuration?id=NOT-A-CODE&utm_source=nfc')
-            ->assertRedirect(route('configuration.invalid', ['id' => 'NOT-A-CODE', 'utm_source' => 'nfc']));
-        $this->get('/configuration?id=CARD-99999')
-            ->assertRedirect(route('configuration.invalid', ['id' => 'CARD-99999']));
+        $this->get('/?id=NOT-A-CODE&utm_source=nfc')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Track/Index')->where('invalid', true)->where('product', null));
+        $this->get('/?id=CARD-99999')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Track/Index')->where('invalid', true)->where('product', null));
 
         $blockedCustomer = Customer::create(['business_name' => 'Blocked Business', 'status' => 'blocked']);
         $blocked = $this->product('STAND', 3, ['customer_id' => $blockedCustomer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/private/review']);
-        $this->get('/configuration?id=STAND-00003&source=qr')
+        $this->get('/?id=STAND-00003&source=qr')
             ->assertRedirect('https://g.page/r/private/review');
 
         $this->assertDatabaseHas('scan_events', ['product_id' => $blocked->id, 'result' => 'redirected']);
         $this->assertDatabaseCount('scan_events', 1);
     }
 
-    public function test_retried_edge_request_is_recorded_only_once(): void
+    public function test_retried_request_is_recorded_only_once(): void
     {
         $customer = Customer::create(['business_name' => 'Dedupe Business', 'status' => 'active']);
         $product = $this->product('PLATE', 2, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/dedupe/review']);
@@ -76,7 +83,7 @@ class ConfigurationRoutingTest extends TestCase
 
         foreach (range(1, 2) as $_) {
             $this->withHeader('X-Shiftrix-Request-Id', $requestId)
-                ->get('/configuration?id=PLATE-00002')
+                ->get('/?id=PLATE-00002')
                 ->assertRedirect('https://g.page/r/dedupe/review');
         }
 
@@ -89,11 +96,11 @@ class ConfigurationRoutingTest extends TestCase
         $customer = Customer::create(['business_name' => 'Probe Business', 'status' => 'active']);
         $this->product('STAND', 3, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/probe/review']);
 
-        $this->head('/configuration?id=STAND-00003')
+        $this->head('/?id=STAND-00003')
             ->assertRedirect('https://g.page/r/probe/review');
         $this->assertDatabaseCount('scan_events', 0);
 
-        $this->get('/configuration?id=STAND-00003')
+        $this->get('/?id=STAND-00003')
             ->assertRedirect('https://g.page/r/probe/review');
         $this->assertDatabaseCount('scan_events', 1);
     }
@@ -104,10 +111,45 @@ class ConfigurationRoutingTest extends TestCase
 
         $this->get('/?id=card-00001&utm_source=nfc&campaign=launch')
             ->assertOk()
-            ->assertSessionHas('url.intended', '/?id=CARD-00001&utm_source=nfc&campaign=launch')
-            ->assertInertia(fn ($page) => $page->where('product.code_id', $product->code_id));
+            ->assertSessionHas('url.intended', '/activate?id=CARD-00001&utm_source=nfc&campaign=launch')
+            ->assertInertia(fn ($page) => $page
+                ->component('Track/Tutorial')
+                ->where('product.code_id', $product->code_id)
+                ->where('continueUrl', '/activate?id=CARD-00001&utm_source=nfc&campaign=launch'));
+
+        $this->get('/activate?id=CARD-00001&utm_source=nfc&campaign=launch')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Track/Index')->where('product.code_id', $product->code_id));
+
+        $this->assertDatabaseCount('scan_events', 1);
+    }
+
+    public function test_legacy_configuration_url_redirects_to_the_canonical_entry_without_recording(): void
+    {
+        $this->product('CARD', 1);
+
+        $this->get('/configuration?id=card-00001&utm_source=legacy')
+            ->assertRedirect(route('home', ['id' => 'CARD-00001', 'utm_source' => 'legacy']))
+            ->assertStatus(301);
 
         $this->assertDatabaseCount('scan_events', 0);
+    }
+
+    public function test_paused_and_unconfigured_products_fail_safely_and_are_not_eligible_scans(): void
+    {
+        $customer = Customer::create(['business_name' => 'Safe Business', 'status' => 'active']);
+        $paused = $this->product('CARD', 1, ['customer_id' => $customer->id, 'status' => 'paused', 'google_review_url' => 'https://g.page/r/paused/review']);
+        $unconfigured = $this->product('PLATE', 2, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => null]);
+
+        $this->get('/?id='.$paused->code_id)
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Configuration/Unavailable')->where('reason', 'paused'));
+        $this->get('/?id='.$unconfigured->code_id)
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Configuration/Unavailable')->where('reason', 'unconfigured'));
+
+        $this->assertDatabaseCount('scan_events', 2);
+        $this->assertDatabaseMissing('scan_events', ['result' => 'redirected']);
     }
 
     private function product(string $variant, int $sequence, array $overrides = []): Product

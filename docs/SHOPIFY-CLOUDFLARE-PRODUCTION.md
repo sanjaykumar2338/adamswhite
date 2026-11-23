@@ -1,4 +1,6 @@
-# SHIFTRIX Shopify `/configuration` production integration
+# RETIRED — SHIFTRIX Shopify `/configuration` production integration
+
+> Superseded on 23 November 2026 by the approved canonical NFC URL `https://app.shiftrix.io/?id=CODE_ID`. Do not deploy this Worker, change Cloudflare routes, edit Shopify, or change DNS for the NFC migration. Follow `docs/NFC-CANONICAL-URL-MIGRATION.md` instead. The remainder is retained only as historical context.
 
 ## Root cause and selected design
 

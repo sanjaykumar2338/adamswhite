@@ -22,10 +22,13 @@ class ActivationFlowTest extends TestCase
         return Product::create(array_merge(['batch_id' => $batch->id, 'inventory_import_id' => $import->id, 'code_id' => 'CARD-00001', 'variant' => 'CARD', 'code_sequence' => 1, 'unit_type' => 'commercial', 'position_in_batch' => 1, 'source_line' => 1, 'status' => 'unclaimed'], $overrides));
     }
 
-    public function test_unclaimed_product_redirects_to_shopify_tutorial_and_records_one_scan(): void
+    public function test_unclaimed_product_shows_the_local_tutorial_and_records_one_scan(): void
     {
         $product = $this->product();
-        $this->get('/configuration?id=CARD-00001')->assertRedirect('https://shiftrix.io/pages/how-to-configure?id=CARD-00001');
+        $this->get('/?id=CARD-00001')->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Track/Tutorial')
+            ->where('product.code_id', 'CARD-00001')
+            ->where('continueUrl', '/activate?id=CARD-00001'));
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'unclaimed']);
         $this->assertDatabaseCount('scan_events', 1);
     }
@@ -38,7 +41,7 @@ class ActivationFlowTest extends TestCase
         $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
         $url = 'https://g.page/r/example/review';
         $this->actingAs($user)->post('/activations', ['code_id' => $product->code_id, 'business_name' => 'Cafe Updated', 'google_review_url' => $url])->assertSessionHasNoErrors();
-        $this->get('/configuration?id=CARD-00001')->assertRedirect($url);
+        $this->get('/?id=CARD-00001')->assertRedirect($url);
         $this->assertDatabaseHas('products', ['id' => $product->id, 'customer_id' => $customer->id, 'status' => 'active']);
         $this->assertDatabaseHas('customers', ['id' => $customer->id, 'business_name' => 'Cafe Updated']);
         $this->assertDatabaseCount('scan_events', 1);

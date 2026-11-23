@@ -29,7 +29,7 @@ class ProductManagementTest extends TestCase
             ->where('products.data.0.id', $owned->id)
             ->where('products.data.0.code_id', 'CARD-00001')
             ->where('products.data.0.variant', 'CARD')
-            ->where('products.data.0.nfc_url', 'https://shiftrix.io/configuration?id=CARD-00001')
+            ->where('products.data.0.nfc_url', 'https://app.shiftrix.io/?id=CARD-00001')
         );
     }
 
@@ -133,11 +133,13 @@ class ProductManagementTest extends TestCase
         $this->assertDatabaseHas('products', ['id' => $product->id, 'code_id' => 'CARD-00001', 'status' => 'paused', 'customer_id' => $customer->id]);
         $this->assertSame($originalUrl, $product->fresh()->nfc_url);
         $this->assertDatabaseHas('activations', ['product_id' => $product->id, 'action' => 'paused']);
-        $this->get('/configuration?id=CARD-00001')->assertRedirect(route('configuration.unavailable', ['id' => 'CARD-00001']));
+        $this->get('/?id=CARD-00001')->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Configuration/Unavailable')
+            ->where('reason', 'paused'));
 
         $this->actingAs($user)->patch(route('products.status', $product), ['status' => 'active'])->assertSessionHasNoErrors();
         $this->assertSame($originalUrl, $product->fresh()->nfc_url);
-        $this->get('/configuration?id=CARD-00001')->assertRedirect('https://g.page/r/example/review');
+        $this->get('/?id=CARD-00001')->assertRedirect('https://g.page/r/example/review');
     }
 
     public function test_customer_cannot_pause_another_customers_product(): void

@@ -88,7 +88,7 @@ class ProductionReadinessTest extends TestCase
         [, $customer] = $this->customerWithUser(customer: ['status' => 'blocked', 'blocked_at' => now()]);
         $product = $this->product('STAND', 1, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/private/review']);
 
-        $this->get('/configuration?id=STAND-00001')->assertRedirect('https://g.page/r/private/review');
+        $this->get('/?id=STAND-00001')->assertRedirect('https://g.page/r/private/review');
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'redirected']);
 
         $this->actingAs($admin)->post(route('admin.products.reset', $product))->assertSessionHasNoErrors();
@@ -109,14 +109,18 @@ class ProductionReadinessTest extends TestCase
         $this->assertStringContainsString('CARD-00001,CARD,,2', $response->streamedContent());
     }
 
-    public function test_origin_can_require_the_edge_shared_secret(): void
+    public function test_canonical_entry_does_not_depend_on_the_retired_edge_secret(): void
     {
         config(['services.shiftrix.edge_secret' => 'edge-test-secret']);
 
-        $this->get('/')->assertOk();
-        $this->get('/configuration?id=CARD-00001')->assertForbidden();
-        $this->withHeader('X-Shiftrix-Edge', 'edge-test-secret')->get('/configuration?id=CARD-00001')
-            ->assertRedirect(route('configuration.invalid', ['id' => 'CARD-00001']));
+        $product = $this->product('CARD', 1);
+
+        $this->get('/?id=CARD-00001')->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Track/Tutorial')
+            ->where('product.code_id', $product->code_id));
+        $this->get('/configuration?id=CARD-00001')
+            ->assertRedirect(route('home', ['id' => 'CARD-00001']))
+            ->assertStatus(301);
     }
 
     public function test_admin_inventory_filters_and_customer_block_controls(): void

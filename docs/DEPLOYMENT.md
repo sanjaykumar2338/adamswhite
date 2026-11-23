@@ -15,7 +15,7 @@
 7. Validate and import the workbook from a private server path. Remove it from the host after the controlled import and backup.
 8. Do not add cron or a persistent queue worker for the current release. IPinfo country enrichment uses Laravel's post-response `deferred` connection and does not depend on a worker. If scheduling is added later, Namecheap Shared Hosting requires at least a five-minute interval. Confirm the account's PHP CLI path first.
 9. Smoke-test registration, verification, password reset, one unclaimed scan, one active redirect, customer/admin authorization and CSV export.
-10. Configure the reviewed Cloudflare routes only after staging acceptance, then monitor HTTP failures and redirect latency.
+10. Smoke-test the canonical `https://app.shiftrix.io/?id=CODE_ID` entry after staging acceptance. Do not change Cloudflare, Shopify, or DNS for NFC routing.
 
 Use `QUEUE_CONNECTION=sync` for the current staging release; IPinfo enrichment explicitly selects the built-in `deferred` connection. Configure `IPINFO_LITE_TOKEN` and `IPINFO_LITE_ENABLED=true` as described in `docs/IPINFO-LITE-COUNTRY-GEOLOCATION.md`. Rotate application, database and mail credentials after handover.
 
@@ -35,12 +35,12 @@ Official hosting references checked for this audit:
 ## Safe staging sequence
 
 1. Create `staging-app.shiftrix.io` in Namecheap with a separate database and document root pointing to `public/`. Do not change `shiftrix.io` DNS or Shopify.
-2. Deploy the reviewed commit, configure `APP_ENV=staging`, `APP_DEBUG=false`, the staging `APP_URL`, `SHIFTRIX_TUTORIAL_URL`, staging SMTP, a unique `APP_KEY`, `SESSION_SECURE_COOKIE=true`, and `SESSION_ENCRYPT=true`. Leave `SHIFTRIX_EDGE_SECRET` empty for direct app testing; it protects only `/configuration` when edge testing begins.
+2. Deploy the reviewed commit, configure `APP_ENV=staging`, `APP_DEBUG=false`, the staging `APP_URL`, `SHIFTRIX_NFC_BASE_URL`, optional `SHIFTRIX_TUTORIAL_VIDEO_URL`, staging SMTP, a unique `APP_KEY`, `SESSION_SECURE_COOKIE=true`, and `SESSION_ENCRYPT=true`.
 3. Run migrations, caches, the dry-run inventory validation, and then a staging-only import. Never upload the XLSX beneath a public document root.
-4. Smoke-test Shiftrix Track directly at `/?id=CODE_ID`. When edge testing is approved, set the shared secret and confirm `/configuration` rejects requests without the edge header while normal app routes remain accessible.
-5. Deploy the Worker to a temporary Cloudflare test hostname with `SHIFTRIX_ORIGIN=https://staging-app.shiftrix.io` and the matching secret. Run the route tests and full browser acceptance there.
-6. Obtain sign-off and a rollback window. Only then plan the single scoped `/configuration*` Cloudflare Worker route described in `infrastructure/cloudflare-worker/wrangler.example.jsonc`.
+4. Smoke-test Shiftrix Track directly at `/?id=CODE_ID` for unactivated, active, paused, unconfigured and unknown products.
+5. Confirm the legacy `/configuration?id=CODE_ID` route returns a 301 to the canonical root URL without recording a duplicate scan.
+6. Obtain sign-off and a rollback window before applying the NFC URL data migration. Do not modify Cloudflare, Shopify or DNS.
 
 The complete cPanel action list and exact commands are in `docs/NAMECHEAP-STAGING-CHECKLIST.md`.
 
-The production edge design follows [Cloudflare Worker route matching](https://developers.cloudflare.com/workers/configuration/routing/routes/). Shopify's documented [app-proxy constraints](https://shopify.dev/docs/apps/build/online-store/app-proxies) are why an app proxy is not used for the exact root-level `/configuration` URL.
+The canonical application-hosted NFC route is documented in `docs/NFC-CANONICAL-URL-MIGRATION.md`.

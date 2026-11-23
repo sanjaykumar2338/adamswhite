@@ -159,7 +159,7 @@ class IpinfoCountryIntegrationTest extends TestCase
         Http::fake(fn () => throw new ConnectionException('IPinfo unavailable.'));
 
         $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])
-            ->get('/configuration?id='.$product->code_id)
+            ->get('/?id='.$product->code_id)
             ->assertRedirect($product->google_review_url);
 
         $this->assertDatabaseHas('scan_events', [
@@ -181,7 +181,7 @@ class IpinfoCountryIntegrationTest extends TestCase
         $this->withServerVariables([
             'REMOTE_ADDR' => '49.36.0.1',
             'HTTP_USER_AGENT' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',
-        ])->get('/configuration?id='.$product->code_id)
+        ])->get('/?id='.$product->code_id)
             ->assertRedirect($product->google_review_url);
 
         $this->assertDatabaseHas('scan_events', [

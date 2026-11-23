@@ -53,7 +53,7 @@ class AdminConsoleTest extends TestCase
         [$owner, $customer] = $this->customerWithOwner(['status' => 'blocked']);
         $product = $this->product('CARD', 1, ['customer_id' => $customer->id, 'status' => 'active', 'google_review_url' => 'https://g.page/r/working/review']);
 
-        $this->get('/configuration?id=CARD-00001')->assertRedirect('https://g.page/r/working/review');
+        $this->get('/?id=CARD-00001')->assertRedirect('https://g.page/r/working/review');
         $this->assertDatabaseHas('scan_events', ['product_id' => $product->id, 'result' => 'redirected']);
         $this->actingAs($owner)->get(route('dashboard'))->assertForbidden();
         $this->actingAs($owner)->patch(route('products.update', $product), ['display_name' => 'Blocked write', 'google_review_url' => $product->google_review_url])->assertForbidden();
@@ -101,7 +101,7 @@ class AdminConsoleTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('admin.inventory.export'))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $csv = $response->streamedContent();
-        $this->assertStringContainsString('PLATE-00042,PLATE,https://shiftrix.io/configuration?id=PLATE-00042', $csv);
+        $this->assertStringContainsString('PLATE-00042,PLATE,https://app.shiftrix.io/?id=PLATE-00042', $csv);
         $this->assertDatabaseHas('audit_logs', ['action' => 'inventory.exported']);
     }
 

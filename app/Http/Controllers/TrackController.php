@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Services\ReviewUrlValidator;
+use App\Services\ScanRecorder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TrackController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, ScanRecorder $recorder, ReviewUrlValidator $validator): RedirectResponse|Response
     {
+        $started = microtime(true);
         $rawCode = $request->query('id');
         $code = is_string($rawCode) ? strtoupper(trim($rawCode)) : '';
         $product = null;
@@ -24,10 +28,52 @@ class TrackController extends Controller
             $invalid = ! $product;
         }
 
+        if ($request->routeIs('home') && $product) {
+            if ($product->status === 'active' && $validator->isValid($product->google_review_url)) {
+                if ($request->isMethod('GET')) {
+                    $recorder->record($product, $request, 'redirected', $started);
+                }
+
+                return redirect()->away($product->google_review_url, 302);
+            }
+
+            if (in_array($product->status, ['active', 'paused', 'disabled'], true) || $product->customer_id) {
+                if ($request->isMethod('GET')) {
+                    $recorder->record($product, $request, 'blocked', $started);
+                }
+
+                return Inertia::render('Configuration/Unavailable', [
+                    'code' => $product->code_id,
+                    'reason' => $product->status === 'active' ? 'unconfigured' : $product->status,
+                ]);
+            }
+
+            if ($request->isMethod('GET')) {
+                $recorder->record($product, $request, 'unclaimed', $started);
+            }
+
+            $query = $request->query();
+            $query['id'] = $product->code_id;
+            $continueUrl = route('activation.lookup', $query, absolute: false);
+            $request->session()->put('pending_product_code', $product->code_id);
+            $request->session()->put('url.intended', $continueUrl);
+            $videoUrl = $this->tutorialVideoUrl();
+
+            return Inertia::render('Track/Tutorial', [
+                'product' => [
+                    ...$product->only(['code_id', 'variant', 'unit_type']),
+                    'image_url' => $product->image_url,
+                ],
+                'continueUrl' => $continueUrl,
+                'videoUrl' => $videoUrl,
+                'videoType' => $videoUrl && preg_match('/\.(mp4|webm)(?:\?.*)?$/i', $videoUrl) ? 'file' : 'embed',
+            ]);
+        }
+
         if ($product && $product->status === 'unclaimed' && ! $product->customer_id) {
             $query = $request->query();
             $query['id'] = $product->code_id;
-            $intended = route('home', $query, absolute: false);
+            $intended = route('activation.lookup', $query, absolute: false);
             $request->session()->put('pending_product_code', $product->code_id);
             $request->session()->put('url.intended', $intended);
         }
@@ -47,5 +93,14 @@ class TrackController extends Controller
             'canActivate' => (bool) ($user?->hasVerifiedEmail() && $customer?->status === 'active'),
             'needsVerification' => (bool) ($user && ! $user->hasVerifiedEmail()),
         ]);
+    }
+
+    private function tutorialVideoUrl(): ?string
+    {
+        $url = trim((string) config('services.shiftrix.tutorial_video_url'));
+
+        return filter_var($url, FILTER_VALIDATE_URL) && parse_url($url, PHP_URL_SCHEME) === 'https'
+            ? $url
+            : null;
     }
 }
