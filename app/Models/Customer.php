@@ -26,6 +26,11 @@ class Customer extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function locations(): HasMany
+    {
+        return $this->hasMany(Location::class);
+    }
+
     public function invitations(): HasMany
     {
         return $this->hasMany(TeamInvitation::class);

@@ -171,7 +171,7 @@ class CustomerAccountSettingsTest extends TestCase
 
         $this->actingAs($owner)->get(route('help'))->assertOk()->assertInertia(fn ($page) => $page
             ->component('Help/Index')
-            ->where('whatsappUrl', 'https://wa.me/33612345678')
+            ->where('whatsappUrl', fn ($value) => str_starts_with($value, 'https://wa.me/33612345678?text=Hello%20SHIFTRIX%20Support'))
         );
     }
 

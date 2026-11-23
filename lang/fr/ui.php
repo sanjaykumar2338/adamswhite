@@ -30,6 +30,9 @@ return [
         'products_assigned' => 'La plage de produits disponibles a bien été attribuée.',
         'future_inventory_created' => "La plage séparée d'inventaire futur a bien été créée.",
         'product_status_updated' => 'Disponibilité du produit mise à jour.',
+        'location_created' => 'Emplacement créé.',
+        'location_updated' => 'Emplacement mis à jour.',
+        'location_deleted' => 'Emplacement supprimé. Ses produits restent accessibles sans emplacement.',
     ],
     'mail' => [
         'invite_subject' => 'Vous êtes invité à gérer :business sur Shiftrix Track',

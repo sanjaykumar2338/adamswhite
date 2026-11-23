@@ -12,11 +12,14 @@ export default function Dashboard({
     series,
     onboarding,
     timezone,
+    locations,
+    selectedLocation,
 }) {
     const { locale, t } = useTranslation();
     const page = usePage();
     const flash = page.props.flash;
     const supportEmail = page.props.support.email;
+    const supportUrl = page.props.support.whatsappUrl || `mailto:${supportEmail}`;
     const firstName = page.props.auth.user.name.trim().split(/\s+/)[0];
     const metrics = [
         {
@@ -80,7 +83,7 @@ export default function Dashboard({
                         </Link>
                         <a
                             className="rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur hover:bg-white/15"
-                            href={route("statistics.export")}
+                            href={route("statistics.export", { location: selectedLocation || undefined })}
                         >
                             {t("dashboard.export")}
                         </a>
@@ -88,6 +91,8 @@ export default function Dashboard({
                     <span className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border border-[#F4B942]/20" />
                     <span className="pointer-events-none absolute -right-8 -top-10 h-44 w-44 rounded-full bg-[#F4B942]/10 blur-2xl" />
                 </section>
+
+                <LocationFilter locations={locations} selectedLocation={selectedLocation} routeName="dashboard" t={t} />
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {metrics.map((metric) => (
@@ -177,7 +182,9 @@ export default function Dashboard({
                         </p>
                     </div>
                     <a
-                        href={`mailto:${supportEmail}`}
+                        href={supportUrl}
+                        target={page.props.support.whatsappUrl ? "_blank" : undefined}
+                        rel={page.props.support.whatsappUrl ? "noreferrer" : undefined}
                         className="mt-4 inline-flex shrink-0 rounded-xl border border-[#F4B942]/40 bg-white px-4 py-2.5 text-sm font-bold text-[#0B132B] shadow-sm transition hover:border-[#F4B942] hover:bg-[#fffaf0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F4B942] focus-visible:ring-offset-2 sm:mt-0"
                     >
                         {t("nav.contact_support")}
@@ -186,6 +193,15 @@ export default function Dashboard({
             </div>
         </AuthenticatedLayout>
     );
+}
+
+function LocationFilter({ locations, selectedLocation, routeName, t }) {
+    if (!locations.length) return null;
+    return <nav className="mt-5 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" aria-label={t("locations.filter")}>
+        <span className="px-2 text-sm font-bold text-slate-500">{t("locations.filter")}:</span>
+        <Link href={route(routeName)} preserveScroll className={`rounded-lg px-3 py-2 text-sm font-bold ${!selectedLocation ? "bg-[#0B132B] text-white" : "text-slate-600 hover:bg-slate-100"}`}>{t("locations.all")}</Link>
+        {locations.map((location) => <Link key={location.id} href={route(routeName, { location: location.id })} preserveScroll className={`rounded-lg px-3 py-2 text-sm font-bold ${selectedLocation === location.id ? "bg-[#0B132B] text-white" : "text-slate-600 hover:bg-slate-100"}`}>{location.name}</Link>)}
+    </nav>;
 }
 
 function QuickProductCard({ products, t }) {

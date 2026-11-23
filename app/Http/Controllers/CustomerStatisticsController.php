@@ -15,8 +15,14 @@ class CustomerStatisticsController extends Controller
         $customer = $request->user()->currentCustomer();
         abort_unless($customer, 403);
 
-        $validated = $request->validate(['days' => ['nullable', 'integer', 'in:7,30,90']]);
+        $validated = $request->validate([
+            'days' => ['nullable', 'integer', 'in:7,30,90'],
+            'location' => ['nullable', 'integer'],
+        ]);
         $days = (int) ($validated['days'] ?? 30);
+        $locationId = isset($validated['location']) && $customer->locations()->whereKey($validated['location'])->exists()
+            ? (int) $validated['location']
+            : null;
         $timezone = (string) config('app.timezone', 'UTC');
         $today = CarbonImmutable::today($timezone);
         $start = $today->subDays($days - 1)->startOfDay()->utc();
@@ -25,6 +31,7 @@ class CustomerStatisticsController extends Controller
             ->where('scan_events.customer_id', $customer->id)
             ->where('scan_events.result', 'redirected')
             ->where('scan_events.is_probable_bot', false)
+            ->when($locationId, fn ($query, int $location) => $query->whereHas('product', fn ($product) => $product->where('location_id', $location)))
             ->where('scan_events.scanned_at', '>=', $start);
 
         $daily = [];
@@ -51,12 +58,15 @@ class CustomerStatisticsController extends Controller
         $rankingBase = (clone $base)->join('products', 'products.id', '=', 'scan_events.product_id')->where('products.customer_id', $customer->id);
         $topProducts = (clone $rankingBase)->selectRaw('products.id, products.code_id, products.display_name, products.variant, COUNT(*) total')->groupBy('products.id', 'products.code_id', 'products.display_name', 'products.variant')->orderByDesc('total')->orderBy('products.code_id')->limit(10)->get();
         $topStaff = (clone $rankingBase)->whereNotNull('products.display_name')->where('products.display_name', '<>', '')->selectRaw('products.id, products.code_id, products.display_name, COUNT(*) total')->groupBy('products.id', 'products.code_id', 'products.display_name')->orderByDesc('total')->orderBy('products.display_name')->limit(10)->get();
+        $topLocations = (clone $rankingBase)->join('locations', 'locations.id', '=', 'products.location_id')->selectRaw('locations.id, locations.name, COUNT(*) total')->groupBy('locations.id', 'locations.name')->orderByDesc('total')->orderBy('locations.name')->limit(10)->get();
 
         $mostActiveDay = $series->sortByDesc('total')->first();
         $mostActiveHour = collect($hourly)->sortDesc()->keys()->first();
 
         return Inertia::render('Statistics/Index', [
             'days' => $days,
+            'locations' => $customer->locations()->orderBy('name')->get(),
+            'selectedLocation' => $locationId,
             'timezone' => $timezone,
             'total' => $total,
             'series' => $series,
@@ -71,6 +81,7 @@ class CustomerStatisticsController extends Controller
             'countries' => $countries,
             'topProducts' => $topProducts,
             'topStaff' => $topStaff,
+            'topLocations' => $topLocations,
             'mostActive' => [
                 'day' => $total === 0 ? null : $mostActiveDay,
                 'hour' => $total === 0 ? null : ['hour' => (int) $mostActiveHour, 'total' => $hourly[$mostActiveHour]],

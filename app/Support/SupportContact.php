@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Schema;
 
 class SupportContact
 {
+    private const WHATSAPP_MESSAGE = 'Hello SHIFTRIX Support, I need help setting up my product.';
+
     public static function email(): string
     {
         $fallback = config('services.shiftrix.support_email');
@@ -23,7 +25,13 @@ class SupportContact
             ? SystemSetting::valueFor('whatsapp_url', config('services.shiftrix.whatsapp_url'))
             : config('services.shiftrix.whatsapp_url');
 
-        return self::normalizeWhatsapp($configured);
+        $url = self::normalizeWhatsapp($configured);
+
+        if ($url === null || str_contains($url, 'text=')) {
+            return $url;
+        }
+
+        return $url.(str_contains($url, '?') ? '&' : '?').'text='.rawurlencode(self::WHATSAPP_MESSAGE);
     }
 
     public static function normalizeWhatsapp(mixed $value): ?string

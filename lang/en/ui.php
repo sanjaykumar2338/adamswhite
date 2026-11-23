@@ -30,6 +30,9 @@ return [
         'products_assigned' => 'The available product range was assigned successfully.',
         'future_inventory_created' => 'The separate future inventory range was created successfully.',
         'product_status_updated' => 'Product availability updated.',
+        'location_created' => 'Location created.',
+        'location_updated' => 'Location updated.',
+        'location_deleted' => 'Location removed. Its products remain accessible as unassigned.',
     ],
     'mail' => [
         'invite_subject' => "You're invited to manage :business on Shiftrix Track",

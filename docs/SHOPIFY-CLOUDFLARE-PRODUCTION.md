@@ -178,12 +178,14 @@ chmod 600 .env
 
 The release procedure must preserve the existing production `.env` and its current session cookie, database, SMTP, Shopify and secret values. Do not copy a staging `.env` or force a staging cookie name into production.
 
-This release contains three additive migrations and they must run in timestamp order after the database backup and before bringing the application back online:
+This release contains five additive migrations and they must run in timestamp order after the database backup and before bringing the application back online:
 
 ```text
 2026_11_21_000001_add_product_labels_and_scan_metadata.php
 2026_11_21_000002_add_customer_account_management.php
 2026_11_21_000003_add_admin_console_fields.php
+2026_11_22_000001_add_scan_analytics_indexes.php
+2026_11_23_000001_add_customer_locations.php
 ```
 
 Do not run `db:seed`, the inventory importer, `migrate:fresh`, `migrate:refresh`, or any database reset. The migrations add nullable/defaulted columns, indexes and the deletion-request review table; they do not update product identifiers, NFC URLs, ownership or historical scans.
@@ -229,7 +231,7 @@ curl -sS -D - -o /dev/null 'https://shiftrix.io/configuration?id=CARD-99999'
 
 Expected results are respectively the configured Google URL, the Shopify tutorial with preserved parameters, and the application invalid page. Confirm exactly one eligible scan per request in the dashboard.
 
-Application rollback uses the `ROLLBACK_DIR` created above and still preserves `.env`, storage, inventory, `.well-known` and `cgi-bin`. The three migrations are backward-compatible with the prior application, so leave them applied during a normal code rollback. Do not run `migrate:rollback` on production: its down methods drop the new columns/table. Restore the verified pre-release database backup only if a database-level rollback is explicitly approved and required.
+Application rollback uses the `ROLLBACK_DIR` created above and still preserves `.env`, storage, inventory, `.well-known` and `cgi-bin`. The five migrations are backward-compatible with the prior application, so leave them applied during a normal code rollback. Do not run `migrate:rollback` on production: its down methods drop the new columns/tables and indexes. Restore the verified pre-release database backup only if a database-level rollback is explicitly approved and required.
 
 ```bash
 cd "$LIVE"

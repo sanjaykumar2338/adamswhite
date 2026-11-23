@@ -1,6 +1,6 @@
 # SHIFTRIX Track final QA and release runbook
 
-Date reviewed: 2026-11-21
+Date reviewed: 2026-11-23
 
 ## Release decision
 
@@ -10,7 +10,7 @@ The Cloudflare NFC route remains a prepared local change. It must not be describ
 
 ## Final verification results
 
-- Laravel: 96 tests passed, 879 assertions.
+- Laravel: 115 tests passed, 1,094 assertions.
 - Cloudflare Worker: 6 tests passed.
 - Shopify tutorial CTA: 3 tests passed.
 - Product QR generation: 1 test passed.
@@ -18,21 +18,30 @@ The Cloudflare NFC route remains a prepared local change. It must not be describ
 - Pint: passed.
 - EN/FR audit: 383 statically referenced UI keys present in both locales; 435 entries in each locale; no locale-only keys.
 - React named-route audit: all 51 referenced route names exist.
-- Migration cycle: isolated fresh migration, rollback of the additive release migrations, and reapplication passed.
+- Migration cycle: isolated fresh migration, full rollback, and reapplication passed. The legacy `is_admin` index is now dropped before its column during rollback.
 - `git diff --check`: passed.
 
-The Vite build reports a non-blocking large-chunk warning for the ApexCharts-based chart bundle. This is a performance optimization opportunity, not a build or functional failure.
+The Vite build reports a non-blocking large-chunk warning for the page-loaded ApexCharts bundle. This remains a performance optimization opportunity, not a build or functional failure.
 
-## Visual QA findings
+## Measured performance changes
+
+- Customer My Products changed from an unbounded result to server-side pagination at 25 products. A 100-product account now serializes at most 25 product cards per request instead of 100 (75% fewer rows in the initial response).
+- The new customer/location/status composite index supports location-scoped product queries without replacing existing ownership/status indexes. Existing eligible-scan period indexes were inspected and retained; no duplicates were added.
+- Admin dashboard counters continue to use the existing 45-second cache, which is within the requested 30–60 second window.
+- Production build comparison from the pre-change and final local builds: main app gzip `122.79 kB` → `122.78 kB`; chart gzip `299.82 kB` → `299.66 kB`; CSS gzip `12.55 kB` → `12.60 kB` after the new location and active-navigation styles. Vite transformed 1,098 modules in both builds.
+- These are repeatable local build/payload measurements. Production network and database latency were not measured because no production access or deployment was authorized.
+
+## Visual QA findings and limitation
 
 - Desktop uses the fixed navy sidebar, official SHIFTRIX Track branding, gold active states, consistent cards, charts, forms, tables, and empty states.
 - Mobile uses the compact header and slide-out navigation. Header spacing was tightened to prevent narrow-screen clipping.
 - Settings tabs use a two-column mobile grid so Profile, Security, Team/Managers, and Privacy remain discoverable without hidden horizontal overflow.
 - Existing desktop/mobile captures are retained in `artifacts/`, including admin overview, dashboard, My Products, Statistics, Settings, Help, activation, and homepage views.
+- Automated browser tooling was unavailable in this session (both configured Chrome and in-app browser surfaces reported unavailable), so the newly changed location controls and zero-value charts were not claimed as screenshot-verified. Production build and component-level/static checks passed.
 
 ## Data-safety findings
 
-- The four release migrations are additive. They do not update product identifiers, NFC URLs, ownership, inventory rows, or historical scans.
+- The five release migrations are additive. They do not update product identifiers, NFC URLs, ownership, inventory rows, or historical scans.
 - Product ownership is enforced by the existing customer relationship and authorization policy on every product read/write path.
 - Blocking a customer prevents dashboard access but does not disable an otherwise active product's public NFC redirect.
 - Bot exclusion and duplicate-scan eligibility remain in the existing scan recorder. Optional device/country metadata collection does not change those decisions.
@@ -47,6 +56,7 @@ Run exactly in filename order:
 2. `2026_11_21_000002_add_customer_account_management.php`
 3. `2026_11_21_000003_add_admin_console_fields.php`
 4. `2026_11_22_000001_add_scan_analytics_indexes.php`
+5. `2026_11_23_000001_add_customer_locations.php`
 
 Never run `migrate:fresh`, `migrate:refresh`, seeders, inventory imports, or a production migration rollback during this release.
 
@@ -76,7 +86,8 @@ The concrete host command sequence and Cloudflare variables are documented in `d
 - Customer and admin login work; a disabled customer cannot enter the dashboard.
 - Customer dashboard KPIs load and use the correct workspace.
 - My Products lists only owned products; rename and Google Review URL validation work; copied NFC URL remains byte-for-byte unchanged; downloaded QR resolves to that same URL.
-- Statistics totals, 7/30/90-day filters, timezone, empty states, and CSV export agree for a known test customer.
+- My Products location creation, assignment, All Locations/specific-location filtering, pagination, and unassigned-product access work.
+- Statistics totals, 7/30/90-day filters, location filter, timezone, zero-value axes/line, and location-aware CSV export agree for a known test customer.
 - Profile update and password change work; session details reveal no token; revoking other sessions requires the current password.
 - Manager invitation, acceptance, workspace switching, revocation, and cross-customer denial work.
 - Privacy export requires confirmation; deletion creates a review request without deleting records.
@@ -107,7 +118,7 @@ Do this only under separate client approval:
 4. Clear and rebuild the Laravel caches using the prior release.
 5. Bring the application up and rerun the core smoke tests.
 
-Leave the four additive migrations applied during a normal code rollback. Their nullable/defaulted/index-only schema is compatible with the prior application. Do not run `php artisan migrate:rollback` in production. Restore the verified database backup only when a database-level rollback is explicitly approved and necessary.
+Leave the five additive migrations applied during a normal code rollback. Their nullable/defaulted/index-only schema is compatible with the prior application. Do not run `php artisan migrate:rollback` in production. Restore the verified database backup only when a database-level rollback is explicitly approved and necessary.
 
 ### Cloudflare rollback
 
@@ -121,6 +132,6 @@ Restore the prior reviewed theme version/section from Shopify theme history. Do 
 
 - Production NFC routing cannot be confirmed until the separately approved Cloudflare activation and live tests occur.
 - Historical analytics lacking trustworthy device/country metadata remains unknown/unavailable; scan source is not inferred.
-- WhatsApp support remains a validated configurable destination and is hidden until the client supplies a number or approved WhatsApp URL.
+- WhatsApp support defaults to the client-provided `+1 601 871 0613`, opens with the approved prefilled message, and remains editable as a validated number or approved WhatsApp URL in Admin Settings. Email remains the fallback.
 - The supplied login/activation photography is included as optimized WebP. Product-specific CARD, PLATE, and STAND photography was not supplied, so the existing product imagery remains unchanged.
 - A production database backup, hosting credentials, and a maintenance window are operator prerequisites, not repository artifacts.

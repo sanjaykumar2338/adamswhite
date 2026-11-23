@@ -20,15 +20,21 @@ class DashboardController extends Controller
 
         $customer = $request->user()->currentCustomer();
         abort_unless($customer, 403);
+        $validated = $request->validate(['location' => ['nullable', 'integer']]);
+        $locationId = isset($validated['location']) && $customer->locations()->whereKey($validated['location'])->exists()
+            ? (int) $validated['location']
+            : null;
         $today = CarbonImmutable::today();
         $firstChartDay = $today->subDays(29);
         $firstSevenDay = $today->subDays(6);
         $previousSevenDay = $today->subDays(13);
-        $products = $customer->products()->with('batch')
+        $products = $customer->products()->with(['batch', 'location'])
+            ->when($locationId, fn ($query, int $location) => $query->where('location_id', $location))
             ->withCount(['scanEvents as scans_7d' => fn ($q) => $q->where('scanned_at', '>=', $firstSevenDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false), 'scanEvents as scans_30d' => fn ($q) => $q->where('scanned_at', '>=', $firstChartDay->startOfDay())->where('result', 'redirected')->where('is_probable_bot', false)])
             ->latest('claimed_at')->get()->append('image_url');
         $eligibleScans = ScanEvent::query()
             ->where('customer_id', $customer->id)
+            ->when($locationId, fn ($query, int $location) => $query->whereHas('product', fn ($product) => $product->where('location_id', $location)))
             ->where('result', 'redirected')
             ->where('is_probable_bot', false);
         $totalScans = (clone $eligibleScans)->count();
@@ -39,12 +45,13 @@ class DashboardController extends Controller
             ? round((($scansSevenDays - $previousSevenDays) / $previousSevenDays) * 100, 1)
             : ($scansSevenDays > 0 ? 100.0 : 0.0);
         $dailyTotals = DB::table('scan_events')
-            ->selectRaw('DATE(scanned_at) day, COUNT(*) total')
-            ->where('customer_id', $customer->id)
-            ->where('scanned_at', '>=', $firstChartDay->startOfDay())
-            ->where('result', 'redirected')
-            ->where('is_probable_bot', false)
-            ->groupByRaw('DATE(scanned_at)')
+            ->when($locationId, fn ($query, int $location) => $query->join('products', 'products.id', '=', 'scan_events.product_id')->where('products.location_id', $location))
+            ->selectRaw('DATE(scan_events.scanned_at) day, COUNT(*) total')
+            ->where('scan_events.customer_id', $customer->id)
+            ->where('scan_events.scanned_at', '>=', $firstChartDay->startOfDay())
+            ->where('scan_events.result', 'redirected')
+            ->where('scan_events.is_probable_bot', false)
+            ->groupByRaw('DATE(scan_events.scanned_at)')
             ->pluck('total', 'day');
         $series = collect(range(0, 29))->map(function (int $offset) use ($firstChartDay, $dailyTotals): array {
             $day = $firstChartDay->addDays($offset)->toDateString();
@@ -54,6 +61,8 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'customer' => $customer,
+            'locations' => $customer->locations()->orderBy('name')->get(),
+            'selectedLocation' => $locationId,
             'role' => $request->user()->roleFor($customer),
             'products' => $products,
             'series' => $series,

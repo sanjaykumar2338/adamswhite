@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Batch;
 use App\Models\Customer;
 use App\Models\InventoryImport;
+use App\Models\Location;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,11 +24,12 @@ class ProductManagementTest extends TestCase
 
         $this->actingAs($user)->get(route('products.index'))->assertOk()->assertInertia(fn ($page) => $page
             ->component('Products/Index')
-            ->has('products', 1)
-            ->where('products.0.id', $owned->id)
-            ->where('products.0.code_id', 'CARD-00001')
-            ->where('products.0.variant', 'CARD')
-            ->where('products.0.nfc_url', 'https://shiftrix.io/configuration?id=CARD-00001')
+            ->has('products.data', 1)
+            ->where('products.per_page', 25)
+            ->where('products.data.0.id', $owned->id)
+            ->where('products.data.0.code_id', 'CARD-00001')
+            ->where('products.data.0.variant', 'CARD')
+            ->where('products.data.0.nfc_url', 'https://shiftrix.io/configuration?id=CARD-00001')
         );
     }
 
@@ -81,8 +83,44 @@ class ProductManagementTest extends TestCase
         $this->product($customer, $batch, $import, 'STAND-00003', 'STAND', 3);
 
         $this->actingAs($user)->get(route('products.index', ['search' => 'Alice', 'variant' => 'CARD']))->assertInertia(fn ($page) => $page
-            ->has('products', 1)->where('products.0.id', $card->id)->where('counts.all', 3)
+            ->has('products.data', 1)->where('products.data.0.id', $card->id)->where('counts.all', 3)
         );
+    }
+
+    public function test_customer_can_manage_locations_assign_products_and_filter_without_changing_ownership(): void
+    {
+        [$user, $customer, $batch, $import] = $this->workspace();
+        $product = $this->product($customer, $batch, $import, 'CARD-00001', 'CARD', 1);
+
+        $this->actingAs($user)->post(route('locations.store'), ['name' => 'Downtown'])->assertSessionHasNoErrors();
+        $location = Location::where('customer_id', $customer->id)->firstOrFail();
+        $this->actingAs($user)->patch(route('products.update', $product), [
+            'display_name' => 'Front desk',
+            'location_id' => $location->id,
+            'google_review_url' => 'https://g.page/r/example/review',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'customer_id' => $customer->id, 'location_id' => $location->id, 'code_id' => 'CARD-00001']);
+        $this->actingAs($user)->get(route('products.index', ['location' => $location->id]))->assertInertia(fn ($page) => $page
+            ->where('filters.location', $location->id)->has('products.data', 1)->where('products.data.0.location.name', 'Downtown')
+        );
+
+        $this->actingAs($user)->delete(route('locations.destroy', $location))->assertRedirect(route('products.index'));
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'customer_id' => $customer->id, 'location_id' => null, 'code_id' => 'CARD-00001']);
+    }
+
+    public function test_location_assignment_is_customer_scoped(): void
+    {
+        [$user, $customer, $batch, $import] = $this->workspace();
+        $product = $this->product($customer, $batch, $import, 'CARD-00001', 'CARD', 1);
+        $other = Customer::create(['business_name' => 'Other', 'max_products' => 10]);
+        $foreignLocation = $other->locations()->create(['name' => 'Foreign']);
+
+        $this->actingAs($user)->patch(route('products.update', $product), [
+            'location_id' => $foreignLocation->id,
+            'google_review_url' => 'https://g.page/r/example/review',
+        ])->assertSessionHasErrors('location_id');
+        $this->assertNull($product->fresh()->location_id);
     }
 
     public function test_owner_can_pause_and_reactivate_without_changing_identifier_or_nfc_url(): void

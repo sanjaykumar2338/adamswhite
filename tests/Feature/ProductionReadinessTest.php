@@ -106,7 +106,7 @@ class ProductionReadinessTest extends TestCase
 
         $this->actingAs($owner)->get(route('dashboard'))->assertInertia(fn ($page) => $page->where('summary.scans7d', 2)->where('summary.scans30d', 2)->has('series', 30));
         $response = $this->actingAs($owner)->get(route('statistics.export'))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
-        $this->assertStringContainsString('CARD-00001,CARD,2', $response->streamedContent());
+        $this->assertStringContainsString('CARD-00001,CARD,,2', $response->streamedContent());
     }
 
     public function test_origin_can_require_the_edge_shared_secret(): void

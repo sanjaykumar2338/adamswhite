@@ -6,7 +6,7 @@ return [
         'edge_secret' => env('SHIFTRIX_EDGE_SECRET'),
         'tutorial_url' => env('SHIFTRIX_TUTORIAL_URL', 'https://shiftrix.io/pages/how-to-configure'),
         'support_email' => env('SHIFTRIX_SUPPORT_EMAIL', 'support@shiftrix.io'),
-        'whatsapp_url' => env('SHIFTRIX_WHATSAPP_URL'),
+        'whatsapp_url' => env('SHIFTRIX_WHATSAPP_URL', '+1 601 871 0613'),
     ],
 
     'ipinfo_lite' => [

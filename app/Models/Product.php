@@ -11,7 +11,7 @@ class Product extends Model
     public const VARIANTS = ['CARD', 'PLATE', 'STAND'];
 
     protected $fillable = [
-        'batch_id', 'inventory_import_id', 'customer_id', 'code_id', 'variant', 'display_name', 'code_sequence',
+        'batch_id', 'inventory_import_id', 'customer_id', 'location_id', 'code_id', 'variant', 'display_name', 'code_sequence',
         'unit_type', 'position_in_batch', 'source_line', 'status', 'google_review_url',
         'claimed_at', 'disabled_at', 'last_scanned_at',
     ];
@@ -29,6 +29,11 @@ class Product extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     public function inventoryImport(): BelongsTo

@@ -105,6 +105,23 @@ class CustomerStatisticsTest extends TestCase
         );
     }
 
+    public function test_location_filter_scopes_statistics_and_csv_export(): void
+    {
+        CarbonImmutable::setTestNow('2026-11-21 12:00:00');
+        [$user, $customer, $product] = $this->workspace();
+        $location = $customer->locations()->create(['name' => 'Downtown']);
+        $product->update(['location_id' => $location->id]);
+        $this->scan($product, $customer, '2026-11-21 10:00:00');
+
+        $this->actingAs($user)->get(route('statistics.index', ['days' => 7, 'location' => $location->id]))->assertInertia(fn ($page) => $page
+            ->where('selectedLocation', $location->id)->where('total', 1)->has('topLocations', 1)->where('topLocations.0.name', 'Downtown')
+        );
+
+        $content = $this->actingAs($user)->get(route('statistics.export', ['days' => 7, 'location' => $location->id]))->assertOk()->streamedContent();
+        $this->assertStringContainsString('location', $content);
+        $this->assertStringContainsString('Downtown', $content);
+    }
+
     private function workspace(int $suffix = 1): array
     {
         $user = User::factory()->create();

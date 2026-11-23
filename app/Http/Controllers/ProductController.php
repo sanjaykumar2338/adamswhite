@@ -23,8 +23,13 @@ class ProductController extends Controller
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
             'variant' => ['nullable', 'in:CARD,PLATE,STAND'],
+            'location' => ['nullable', 'integer'],
         ]);
+        $locationId = isset($filters['location']) && $customer->locations()->whereKey($filters['location'])->exists()
+            ? (int) $filters['location']
+            : null;
         $products = $customer->products()
+            ->with('location')
             ->when($filters['search'] ?? null, function ($query, string $search): void {
                 $query->where(function ($nested) use ($search): void {
                     $nested->where('code_id', 'like', '%'.$search.'%')
@@ -32,14 +37,17 @@ class ProductController extends Controller
                 });
             })
             ->when($filters['variant'] ?? null, fn ($query, string $variant) => $query->where('variant', $variant))
+            ->when($locationId, fn ($query, int $location) => $query->where('location_id', $location))
             ->orderByRaw("CASE variant WHEN 'CARD' THEN 1 WHEN 'PLATE' THEN 2 ELSE 3 END")
             ->orderBy('code_id')
-            ->get()
-            ->each->append(['image_url', 'nfc_url']);
+            ->paginate(25)
+            ->withQueryString()
+            ->through(fn (Product $product) => $product->append(['image_url', 'nfc_url']));
 
         return Inertia::render('Products/Index', [
             'products' => $products,
-            'filters' => ['search' => $filters['search'] ?? '', 'variant' => $filters['variant'] ?? ''],
+            'filters' => ['search' => $filters['search'] ?? '', 'variant' => $filters['variant'] ?? '', 'location' => $locationId],
+            'locations' => $customer->locations()->withCount('products')->orderBy('name')->get(),
             'counts' => [
                 'all' => $customer->products()->count(),
                 'CARD' => $customer->products()->where('variant', 'CARD')->count(),
@@ -58,6 +66,7 @@ class ProductController extends Controller
             }
             $product->update([
                 'display_name' => $request->has('display_name') ? $request->validated('display_name') : $product->display_name,
+                'location_id' => $request->has('location_id') ? $request->validated('location_id') : $product->location_id,
                 'google_review_url' => $url,
             ]);
         });

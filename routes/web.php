@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PrivacyExportController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -42,6 +43,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/activations', [ActivationController::class, 'store'])->middleware(['customer.access', 'throttle:20,1'])->name('activations.store');
     Route::patch('/products/{product}', [ProductController::class, 'update'])->middleware('customer.access')->name('products.update');
     Route::patch('/products/{product}/status', [ProductController::class, 'updateStatus'])->middleware('customer.access')->name('products.status');
+    Route::post('/locations', [LocationController::class, 'store'])->middleware('customer.access')->name('locations.store');
+    Route::patch('/locations/{location}', [LocationController::class, 'update'])->middleware('customer.access')->name('locations.update');
+    Route::delete('/locations/{location}', [LocationController::class, 'destroy'])->middleware('customer.access')->name('locations.destroy');
     Route::get('/statistics', CustomerStatisticsController::class)->middleware('customer.access')->name('statistics.index');
     Route::get('/statistics/export', StatisticsExportController::class)->middleware('customer.access')->name('statistics.export');
     Route::get('/team', [TeamController::class, 'index'])->middleware('customer.access')->name('team.index');

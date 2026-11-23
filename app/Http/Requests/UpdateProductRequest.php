@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Services\ReviewUrlValidator;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -20,6 +21,11 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'display_name' => ['nullable', 'string', 'max:120'],
+            'location_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('locations', 'id')->where('customer_id', $this->user()?->currentCustomer()?->id),
+            ],
             'google_review_url' => [
                 'required', 'string', 'max:2048',
                 function (string $attribute, mixed $value, Closure $fail): void {

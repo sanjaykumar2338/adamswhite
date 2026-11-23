@@ -1,17 +1,17 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useTranslation } from "@/i18n";
-import { Head, router, useForm } from "@inertiajs/react";
+import { Head, Link, router, useForm } from "@inertiajs/react";
 import { createProductQrDownload } from "@/lib/productQr";
 import { useState } from "react";
 
-export default function ProductsIndex({ products, filters, counts }) {
+export default function ProductsIndex({ products, filters, counts, locations }) {
     const { t } = useTranslation();
     const [search, setSearch] = useState(filters.search);
 
-    const filter = (variant = filters.variant) =>
+    const filter = (variant = filters.variant, location = filters.location) =>
         router.get(
             route("products.index"),
-            { search, variant },
+            { search, variant, location },
             { preserveState: true, replace: true },
         );
 
@@ -80,7 +80,18 @@ export default function ProductsIndex({ products, filters, counts }) {
                         <button className="rounded-xl bg-[#0B132B] px-5 py-3 text-sm font-bold text-white hover:bg-[#142044]">
                             {t("products.search")}
                         </button>
-                        {(filters.search || filters.variant) && (
+                        <label className="min-w-56">
+                            <span className="sr-only">{t("locations.filter")}</span>
+                            <select
+                                value={filters.location || ""}
+                                onChange={(event) => filter(filters.variant, event.target.value)}
+                                className="w-full rounded-xl border-slate-200 py-3 text-sm font-bold focus:border-[#F4B942] focus:ring-[#F4B942]"
+                            >
+                                <option value="">{t("locations.all")}</option>
+                                {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
+                            </select>
+                        </label>
+                        {(filters.search || filters.variant || filters.location) && (
                             <button
                                 type="button"
                                 onClick={() => {
@@ -115,12 +126,15 @@ export default function ProductsIndex({ products, filters, counts }) {
                     </div>
                 </section>
 
-                {products.length ? (
+                <LocationManager locations={locations} t={t} />
+
+                {products.data.length ? (
                     <div className="mt-6 grid gap-5 xl:grid-cols-2">
-                        {products.map((product) => (
+                        {products.data.map((product) => (
                             <ProductCard
                                 key={product.id}
                                 product={product}
+                                locations={locations}
                                 t={t}
                             />
                         ))}
@@ -128,14 +142,16 @@ export default function ProductsIndex({ products, filters, counts }) {
                 ) : (
                     <EmptyState t={t} />
                 )}
+                <Pagination links={products.links} />
             </div>
         </AuthenticatedLayout>
     );
 }
 
-function ProductCard({ product, t }) {
+function ProductCard({ product, locations, t }) {
     const form = useForm({
         display_name: product.display_name || "",
+        location_id: product.location_id || "",
         google_review_url: product.google_review_url || "",
     });
     const [copied, setCopied] = useState("");
@@ -206,6 +222,20 @@ function ProductCard({ product, t }) {
                 }}
                 className="space-y-5 p-5 sm:p-6"
             >
+                <Field
+                    label={t("locations.location")}
+                    hint={t("locations.assignment_hint")}
+                    error={form.errors.location_id}
+                >
+                    <select
+                        value={form.data.location_id}
+                        onChange={(event) => form.setData("location_id", event.target.value)}
+                        className="mt-2 w-full rounded-xl border-slate-200 focus:border-[#F4B942] focus:ring-[#F4B942]"
+                    >
+                        <option value="">{t("locations.unassigned")}</option>
+                        {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
+                    </select>
+                </Field>
                 <Field
                     label={t("products.name_label")}
                     hint={t("products.name_hint")}
@@ -318,6 +348,40 @@ function ProductCard({ product, t }) {
             </form>
         </article>
     );
+}
+
+function LocationManager({ locations, t }) {
+    const create = useForm({ name: "" });
+    return <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <h2 className="text-lg font-black text-[#0B132B]">{t("locations.manage")}</h2>
+                <p className="mt-1 text-sm text-slate-500">{t("locations.manage_help")}</p>
+            </div>
+            <form className="flex gap-2" onSubmit={(event) => {
+                event.preventDefault();
+                create.post(route("locations.store"), { preserveScroll: true, onSuccess: () => create.reset() });
+            }}>
+                <input required maxLength="120" value={create.data.name} onChange={(event) => create.setData("name", event.target.value)} placeholder={t("locations.name_placeholder")} className="min-w-0 rounded-xl border-slate-200 text-sm focus:border-[#F4B942] focus:ring-[#F4B942]" />
+                <button disabled={create.processing} className="gold-button rounded-xl px-4 py-2.5 text-sm font-black">{t("locations.add")}</button>
+            </form>
+        </div>
+        {create.errors.name && <p className="mt-2 text-sm font-semibold text-red-600">{create.errors.name}</p>}
+        <div className="mt-4 flex flex-wrap gap-2">
+            {locations.map((location) => <span key={location.id} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+                {location.name} <span className="text-xs text-slate-400">{location.products_count}</span>
+                <button type="button" onClick={() => router.delete(route("locations.destroy", location.id), { preserveScroll: true })} className="text-slate-400 hover:text-red-600" aria-label={`${t("locations.remove")} ${location.name}`}>×</button>
+            </span>)}
+            {!locations.length && <p className="text-sm text-slate-500">{t("locations.none")}</p>}
+        </div>
+    </section>;
+}
+
+function Pagination({ links }) {
+    if (!links || links.length <= 3) return null;
+    return <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Pagination">
+        {links.map((link, index) => link.url ? <Link key={index} href={link.url} preserveScroll preserveState className={`rounded-lg border px-3 py-2 text-sm font-bold ${link.active ? "border-[#F4B942] bg-[#FFF8E8] text-[#9A6417]" : "border-slate-200 bg-white text-slate-600"}`} dangerouslySetInnerHTML={{ __html: link.label }} /> : <span key={index} className="rounded-lg border border-slate-100 px-3 py-2 text-sm text-slate-300" dangerouslySetInnerHTML={{ __html: link.label }} />)}
+    </nav>;
 }
 
 function Field({ label, hint, error, children }) {

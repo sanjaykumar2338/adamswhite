@@ -83,12 +83,7 @@ export default function ScanActivityChart({ series, locale, t, defaultRange = 30
                 {[7, 30].map((days) => <button key={days} type="button" aria-pressed={range === days} onClick={() => setRange(days)} className={`rounded-lg px-3.5 py-2 text-sm font-bold transition ${range === days ? 'bg-[#0B132B] text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-[#0B132B]'}`}>{t(`dashboard.range_${days}`)}</button>)}
             </div>}
         </div>
-        {total > 0
-            ? <ReactApexChart options={options} series={chartSeries} type="area" height={290} />
-            : <div className="mt-4 flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 text-center sm:h-[290px]">
-                <div className="flex h-12 w-12 items-end justify-center gap-1 rounded-2xl bg-white shadow-sm" aria-hidden="true"><span className="mb-3 h-2 w-1.5 rounded-full bg-[#F4B942]/40" /><span className="mb-3 h-4 w-1.5 rounded-full bg-[#F4B942]/65" /><span className="mb-3 h-6 w-1.5 rounded-full bg-[#F4B942]" /></div>
-                <p className="mt-4 text-sm font-bold text-[#0B132B]">{t('dashboard.chart_empty')}</p>
-                <p className="mt-1 max-w-sm text-xs leading-5 text-slate-500">{t('dashboard.chart_empty_help')}</p>
-            </div>}
+        <ReactApexChart options={options} series={chartSeries} type="area" height={290} />
+        {total === 0 && <p className="-mt-3 text-center text-xs font-semibold text-slate-500">{t('dashboard.chart_empty_help')}</p>}
     </section>;
 }

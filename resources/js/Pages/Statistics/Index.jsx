@@ -16,7 +16,10 @@ export default function StatisticsIndex({
     countries,
     topProducts,
     topStaff,
+    topLocations,
     mostActive,
+    locations,
+    selectedLocation,
 }) {
     const { t, locale } = useTranslation();
     const weekdayLabels = Array.from({ length: 7 }, (_, day) =>
@@ -92,20 +95,21 @@ export default function StatisticsIndex({
                         </p>
                     </div>
                     <a
-                        href={route("statistics.export", { days })}
+                        href={route("statistics.export", { days, location: selectedLocation || undefined })}
                         className="mt-5 inline-flex rounded-xl bg-[#F4B942] px-5 py-3 text-sm font-black text-[#0B132B] hover:bg-[#FFDC7A] lg:mt-0"
                     >
                         {t("statistics.export")}
                     </a>
                 </section>
 
-                <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
                     <div className="inline-flex rounded-xl bg-slate-100 p-1">
                         {[7, 30, 90].map((value) => (
                             <Link
                                 key={value}
                                 href={route("statistics.index", {
                                     days: value,
+                                    location: selectedLocation || undefined,
                                 })}
                                 preserveScroll
                                 className={`rounded-lg px-4 py-2 text-sm font-black ${days === value ? "bg-[#0B132B] text-white shadow-sm" : "text-slate-600"}`}
@@ -114,6 +118,13 @@ export default function StatisticsIndex({
                             </Link>
                         ))}
                     </div>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-500">
+                        {t("locations.filter")}
+                        <select value={selectedLocation || ""} onChange={(event) => window.location.assign(route("statistics.index", { days, location: event.target.value || undefined }))} className="rounded-xl border-slate-200 py-2 text-sm text-[#0B132B] focus:border-[#F4B942] focus:ring-[#F4B942]">
+                            <option value="">{t("locations.all")}</option>
+                            {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
+                        </select>
+                    </label>
                     <p className="text-sm font-semibold text-slate-500">
                         {t("statistics.timezone")}:{" "}
                         <span className="text-[#0B132B]">{timezone}</span>
@@ -186,7 +197,7 @@ export default function StatisticsIndex({
                 <div className="mt-5 grid gap-5 xl:grid-cols-2">
                     <ChartCard
                         title={t("statistics.weekday")}
-                        empty={total === 0}
+                        empty={false}
                         t={t}
                     >
                         <ReactApexChart
@@ -203,7 +214,7 @@ export default function StatisticsIndex({
                     </ChartCard>
                     <ChartCard
                         title={t("statistics.hour")}
-                        empty={total === 0}
+                        empty={false}
                         t={t}
                     >
                         <ReactApexChart
@@ -224,7 +235,7 @@ export default function StatisticsIndex({
                         />
                     </ChartCard>
                 </div>
-                <div className="mt-5 grid gap-5 xl:grid-cols-2">
+                <div className="mt-5 grid gap-5 xl:grid-cols-3">
                     <ChartCard
                         title={t("statistics.devices")}
                         empty={total === 0}
@@ -280,6 +291,13 @@ export default function StatisticsIndex({
                         locale={locale}
                         empty={t("statistics.no_named_products")}
                         label={(row) => row.display_name}
+                    />
+                    <Ranking
+                        title={t("statistics.top_locations")}
+                        rows={topLocations}
+                        locale={locale}
+                        empty={t("statistics.no_locations")}
+                        label={(row) => row.name}
                     />
                 </div>
                 <p className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-xs leading-5 text-blue-800">
