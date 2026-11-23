@@ -32,7 +32,7 @@ export default function AuthenticatedLayout({ header, children }) {
     ];
     const links = user.is_admin ? adminLinks : customerLinks;
 
-    return <div className="min-h-screen bg-[#f6f7fb] text-[#0B132B]">
+    return <div className="viewport-shell bg-[#f6f7fb] text-[#0B132B]">
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto bg-[#0B132B] text-white shadow-2xl shadow-[#0B132B]/20 lg:flex">
             <SidebarContent dashboardUrl={dashboardUrl} helpUrl={helpUrl} links={links} supportEmail={support.email} supportUrl={support.whatsappUrl} user={user} t={t} />
         </aside>
@@ -45,7 +45,7 @@ export default function AuthenticatedLayout({ header, children }) {
             </aside>
         </div>}
 
-        <div className="min-h-screen lg:pl-72">
+        <div className="viewport-shell lg:pl-72">
             <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
                 <div className="flex h-[4.75rem] items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8 xl:px-10">
                     <button type="button" onClick={() => setOpen(true)} className="rounded-xl border border-slate-200 bg-white p-2.5 text-[#0B132B] shadow-sm lg:hidden" aria-label={t('common.menu')}><MenuIcon /></button>

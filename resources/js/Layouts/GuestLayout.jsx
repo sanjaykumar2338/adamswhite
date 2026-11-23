@@ -7,7 +7,7 @@ export default function GuestLayout({ children, adminPortal = false }) {
     const { t } = useTranslation();
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#F7F8FB] px-4 py-5 sm:px-6 lg:flex lg:items-center lg:py-8">
+        <div className="viewport-shell relative overflow-hidden bg-[#F7F8FB] px-4 py-5 sm:px-6 lg:flex lg:items-center lg:py-8">
             <div className="pointer-events-none absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#F4B942]/10 blur-3xl" />
             <div className="relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_28px_90px_rgba(11,19,43,.14)] lg:min-h-[690px] lg:grid-cols-[1.04fr_.96fr]">
                 <aside className="premium-hero relative hidden overflow-hidden p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">

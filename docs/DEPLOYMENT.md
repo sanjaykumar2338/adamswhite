@@ -7,10 +7,10 @@
 ## Release
 
 1. Back up the database and current release.
-2. Upload or pull the reviewed commit into a directory outside `public_html` where supported.
+2. Pull the reviewed release with `git pull origin main` into a directory outside `public_html` where supported (or clone the repository there for the first deployment).
 3. Point the application document root at Laravel's `public` directory. Never expose `.env`, `vendor` internals, storage or the source workbook.
 4. Create `.env` from `.env.example` with `APP_ENV=production`, `APP_DEBUG=false`, the final HTTPS URL, MySQL credentials, `DB_ENGINE=InnoDB`, SMTP settings and secure session settings.
-5. Run `composer install --no-dev --optimize-autoloader` and deploy the already-built frontend or run `npm ci && npm run build`.
+5. Run `composer install --no-dev --optimize-autoloader`. The production Vite output in `public/build` is committed with each reviewed release, so Node and a manual frontend upload are not required on the server.
 6. Run `php artisan migrate --force`, then `php artisan config:cache`, `route:cache`, `view:cache` and `storage:link` if public uploads are introduced.
 7. Validate and import the workbook from a private server path. Remove it from the host after the controlled import and backup.
 8. Do not add cron or a persistent queue worker for the current release. IPinfo country enrichment uses Laravel's post-response `deferred` connection and does not depend on a worker. If scheduling is added later, Namecheap Shared Hosting requires at least a five-minute interval. Confirm the account's PHP CLI path first.

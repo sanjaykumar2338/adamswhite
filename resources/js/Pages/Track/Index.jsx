@@ -22,7 +22,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
 
     const hasResult = Boolean(invalid || product);
 
-    return <div className="flex min-h-[100dvh] flex-col bg-[#f4f6fa]">
+    return <div className="viewport-shell flex flex-col bg-[#f4f6fa]">
         <Head title={t('track.title')} />
         <header className="shrink-0 border-b border-white/10 bg-[#081027] text-white">
             <div className="mx-auto flex h-[4.75rem] max-w-7xl items-center justify-between px-5 sm:px-8">

@@ -12,8 +12,10 @@
     --brand-canvas: #f7f8fb;
     --brand-border: #e2e8f0;
 }
-body { background: var(--brand-canvas); color: var(--brand-navy); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-html { scroll-behavior: smooth; }
+html { min-height: 100%; background: var(--brand-canvas); scroll-behavior: smooth; }
+body, #app { min-height: 100vh; min-height: 100dvh; }
+body { margin: 0; background: var(--brand-canvas); color: var(--brand-navy); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.viewport-shell { min-height: 100vh; min-height: 100dvh; }
 .app-shell { background: radial-gradient(circle at 85% -10%, rgb(244 185 66 / .14), transparent 28rem), var(--brand-canvas); }
 .brand-gradient { background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-soft) 76%, #51300e 145%); }
 .metallic-gold { background: linear-gradient(135deg, #ffdc7a 0%, #f4b942 46%, #d79624 100%); }
