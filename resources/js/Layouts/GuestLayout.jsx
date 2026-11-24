@@ -9,12 +9,12 @@ export default function GuestLayout({ children, adminPortal = false, wide = fals
     return (
         <div className="viewport-shell relative overflow-x-hidden bg-white">
             <div className="relative grid min-h-screen w-full bg-white lg:min-h-[100dvh] lg:grid-cols-[minmax(0,.9fr)_minmax(36rem,1.1fr)]">
-                <aside className="premium-hero relative hidden min-h-[100dvh] overflow-hidden p-10 text-white lg:flex lg:items-center lg:justify-center xl:p-14 2xl:p-16">
+                <aside className="premium-hero relative hidden min-h-[100dvh] overflow-hidden p-10 text-white lg:flex lg:items-center lg:justify-start xl:p-14 2xl:p-16">
                     <img src={adminPortal ? '/images/marketing/admin-portal.webp' : '/images/marketing/customer-login.webp'} alt="" className="absolute inset-0 h-full w-full object-cover" aria-hidden="true" />
                     <span className={`absolute inset-0 ${adminPortal ? 'bg-[#0B132B]/70' : 'bg-[#0B132B]/[.78]'}`} aria-hidden="true" />
+                    <Link href={route('home')} className="absolute left-10 top-10 z-10 xl:left-14 2xl:left-16"><ApplicationLogo className="h-11 w-52" dark /></Link>
                     <div className="relative z-10 w-full max-w-xl">
-                        <Link href={route('home')}><ApplicationLogo className="h-11 w-52" dark /></Link>
-                        <section className="mt-8">
+                        <section>
                             <p className="text-xs font-black uppercase tracking-[.24em] text-[#FFDC7A]">{t('auth.portal_eyebrow')}</p>
                             <h1 className="mt-3 text-3xl font-black leading-[1.14] tracking-[-.025em] xl:text-4xl 2xl:text-[2.75rem]">{t('auth.portal_title')}</h1>
                             <p className="mt-4 max-w-lg text-sm leading-7 text-slate-300 xl:text-base">{t('auth.portal_intro')}</p>
