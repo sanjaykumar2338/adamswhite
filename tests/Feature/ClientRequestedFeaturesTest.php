@@ -65,24 +65,57 @@ class ClientRequestedFeaturesTest extends TestCase
             ->where('scanMilestone', null));
     }
 
-    public function test_reached_scan_milestone_is_shown_once_and_dismissal_persists(): void
+    public function test_scan_milestone_is_hidden_at_nine_genuine_scans(): void
     {
         config()->set('services.shiftrix.scan_milestone_enabled', true);
-        config()->set('services.shiftrix.scan_milestone_threshold', 3);
-        CarbonImmutable::setTestNow('2026-11-24 10:00:00');
+        config()->set('services.shiftrix.scan_milestone_threshold', 10);
         [$user, $customer] = $this->customerUser();
         $product = $this->product($customer);
-        $this->createScans($product, $customer, 2);
-        $this->createScans($product, $customer, 3, ['is_probable_bot' => true]);
-        $this->createScans($product, $customer, 2, ['result' => 'blocked']);
+        $this->createScans($product, $customer, 9);
+        $this->createScans($product, $customer, 4, ['is_probable_bot' => true]);
+        $this->createScans($product, $customer, 4, ['result' => 'blocked']);
 
         $this->actingAs($user)->get(route('dashboard'))->assertInertia(fn ($page) => $page
             ->where('scanMilestone', null));
+    }
 
-        $this->createScans($product, $customer, 1);
+    public function test_scan_milestone_is_shown_at_exactly_ten_genuine_scans(): void
+    {
+        config()->set('services.shiftrix.scan_milestone_enabled', true);
+        config()->set('services.shiftrix.scan_milestone_threshold', 10);
+        [$user, $customer] = $this->customerUser();
+        $product = $this->product($customer);
+        $this->createScans($product, $customer, 10);
+
         $this->actingAs($user)->get(route('dashboard'))->assertInertia(fn ($page) => $page
-            ->where('scanMilestone.threshold', 3)
-            ->where('scanMilestone.count', 3));
+            ->where('scanMilestone.threshold', 10)
+            ->where('scanMilestone.count', 10));
+    }
+
+    public function test_scan_milestone_remains_single_above_ten_genuine_scans(): void
+    {
+        config()->set('services.shiftrix.scan_milestone_enabled', true);
+        config()->set('services.shiftrix.scan_milestone_threshold', 10);
+        [$user, $customer] = $this->customerUser();
+        $product = $this->product($customer);
+        $this->createScans($product, $customer, 12);
+
+        $this->actingAs($user)->get(route('dashboard'))->assertInertia(fn ($page) => $page
+            ->where('scanMilestone.threshold', 10)
+            ->where('scanMilestone.count', 12));
+    }
+
+    public function test_scan_milestone_dismissal_persists_and_duplicate_dismissal_is_idempotent(): void
+    {
+        config()->set('services.shiftrix.scan_milestone_enabled', true);
+        config()->set('services.shiftrix.scan_milestone_threshold', 10);
+        CarbonImmutable::setTestNow('2026-11-24 10:00:00');
+        [$user, $customer] = $this->customerUser();
+        $product = $this->product($customer);
+        $this->createScans($product, $customer, 10);
+        $this->actingAs($user)->get(route('dashboard'))->assertInertia(fn ($page) => $page
+            ->where('scanMilestone.threshold', 10)
+            ->where('scanMilestone.count', 10));
 
         $this->actingAs($user)->patch(route('scan-milestone.dismiss'))->assertRedirect(route('dashboard'));
         $dismissedAt = $customer->fresh()->genuine_scan_milestone_dismissed_at;

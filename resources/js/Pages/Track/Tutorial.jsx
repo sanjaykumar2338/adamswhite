@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import PublicFooter from '@/Components/PublicFooter';
 import { useTranslation } from '@/i18n';
 import { Head, Link } from '@inertiajs/react';
 
@@ -50,7 +51,7 @@ export default function Tutorial({ product, continueUrl, videoUrl, videoType }) 
                 </div>
             </section>
         </main>
-        <footer className="border-t border-white/10 bg-[#070D1F] px-5 py-6 text-center text-sm text-[#94A3B8]">{t('legal.copyright')}</footer>
+        <PublicFooter dark />
     </div>;
 }
 

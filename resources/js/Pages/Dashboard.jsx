@@ -65,7 +65,7 @@ export default function Dashboard({
                 )}
 
                 {scanMilestone && <aside role="status" className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#F4B942]/35 bg-amber-50/70 p-4 text-[#0B132B] shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                    <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0B132B] font-black text-[#FFDC7A]">{scanMilestone.threshold}</span><div><p className="font-black">{t('dashboard.milestone_title', { count: scanMilestone.threshold })}</p><p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{t('dashboard.milestone_body')}</p></div></div>
+                    <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0B132B] font-black text-[#FFDC7A]">{scanMilestone.threshold}</span><div><p className="font-black">{t('dashboard.milestone_title', { count: scanMilestone.threshold })}</p><p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{t('dashboard.milestone_body', { count: scanMilestone.threshold })}</p></div></div>
                     <button type="button" disabled={milestoneForm.processing} onClick={() => milestoneForm.patch(route('scan-milestone.dismiss'), { preserveScroll: true })} className="shrink-0 rounded-xl border border-[#0B132B]/15 bg-white px-4 py-2.5 text-sm font-black text-[#0B132B] hover:border-[#F4B942] disabled:opacity-50">{t('dashboard.milestone_dismiss')}</button>
                 </aside>}
 
