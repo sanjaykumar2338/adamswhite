@@ -2,11 +2,13 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import InputError from '@/Components/InputError';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { useTranslation } from '@/i18n';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { landingNavigation } from '@/lib/landingNavigation';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 export default function Track({ code, invalid, product, customer, canActivate, needsVerification }) {
     const { t } = useTranslation();
+    const accountNavigation = landingNavigation(usePage().props.auth?.user);
     const [lookup, setLookup] = useState(code || '');
     const form = useForm({ code_id: product?.code_id || '', business_name: customer?.business_name || '', google_review_url: '' });
 
@@ -27,7 +29,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
         <header className="shrink-0 border-b border-white/10 bg-[#081027] text-white">
             <div className="mx-auto flex h-[4.75rem] max-w-7xl items-center justify-between px-5 sm:px-8">
                 <Link href={route('home')} aria-label="SHIFTRIX Track"><ApplicationLogo className="h-9 w-36 sm:h-10 sm:w-52" dark /></Link>
-                <div className="flex items-center gap-2 sm:gap-3"><LanguageSwitcher dark />{!product && <Link href={route('login')} className="rounded-full border border-white/25 px-3 py-2 text-xs font-semibold text-white hover:border-[#FFDC7A]/60 hover:bg-white/10 sm:px-4 sm:py-2.5 sm:text-sm">{t('auth.login')}</Link>}</div>
+                <div className="flex items-center gap-2 sm:gap-3"><LanguageSwitcher dark />{!product && <Link href={route(accountNavigation.routeName)} className="rounded-full border border-white/25 px-3 py-2 text-xs font-semibold text-white hover:border-[#FFDC7A]/60 hover:bg-white/10 sm:px-4 sm:py-2.5 sm:text-sm">{t(accountNavigation.labelKey)}</Link>}</div>
             </div>
         </header>
 

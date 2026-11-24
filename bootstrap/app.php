@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCustomerAccess;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\PreventPublicCaching;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'customer.access' => EnsureCustomerAccess::class,
+            'private.response' => PreventPublicCaching::class,
         ]);
 
         $middleware->web(append: [
