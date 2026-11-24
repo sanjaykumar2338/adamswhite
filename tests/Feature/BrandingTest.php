@@ -42,8 +42,10 @@ class BrandingTest extends TestCase
         }
 
         $translations = file_get_contents(resource_path('js/i18n.js'));
-        $this->assertStringContainsString('Turn Every Customer Visit Into 5-Star Reviews & Measurable Team Performance.', $translations);
-        $this->assertStringContainsString("Transformez chaque visite client en avis 5 étoiles et en performance d'équipe mesurable.", $translations);
+        $this->assertStringContainsString('Turn every customer interaction into useful, authentic feedback.', $translations);
+        $this->assertStringContainsString('Transformez chaque interaction client en retour utile et authentique.', $translations);
+        $this->assertStringNotContainsString('5-Star Reviews', $translations);
+        $this->assertStringNotContainsString('Défis et récompenses', $translations);
         $this->assertStringContainsString('Activate Your SHIFTRIX Asset in 30 Seconds.', $translations);
         $this->assertStringContainsString('Activez votre produit SHIFTRIX en 30 secondes.', $translations);
     }

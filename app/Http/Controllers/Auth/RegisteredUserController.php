@@ -35,25 +35,30 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'business_name' => 'required|string|max:255',
+            'business_name' => [
+                Rule::requiredIf(fn (): bool => $request->input('account_type') !== Customer::ACCOUNT_TYPE_INDIVIDUAL),
+                'nullable',
+                'string',
+                'max:255',
+            ],
             'account_type' => ['required', Rule::in(Customer::ACCOUNT_TYPES)],
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = DB::transaction(function () use ($request): User {
+        $user = DB::transaction(function () use ($validated): User {
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
+                'name' => $validated['name'],
+                'email' => $validated['email'],
                 'preferred_locale' => app()->getLocale(),
-                'password' => Hash::make($request->password),
+                'password' => Hash::make($validated['password']),
             ]);
 
             $customer = Customer::create([
-                'business_name' => $request->business_name,
-                'account_type' => $request->account_type,
+                'business_name' => filled($validated['business_name'] ?? null) ? $validated['business_name'] : $validated['name'],
+                'account_type' => $validated['account_type'],
                 'max_products' => 10,
             ]);
 

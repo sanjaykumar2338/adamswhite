@@ -36,7 +36,7 @@ class RegistrationTest extends TestCase
     {
         $this->withSession(['url.intended' => '/?id=CARD-00001', 'locale' => 'fr'])->post('/register', [
             'name' => 'Scan User',
-            'business_name' => 'Scan Business',
+            'business_name' => '',
             'account_type' => 'individual',
             'email' => 'scan@example.com',
             'password' => 'password',
@@ -44,7 +44,7 @@ class RegistrationTest extends TestCase
         ])->assertRedirect('/?id=CARD-00001');
 
         $this->assertDatabaseHas('users', ['email' => 'scan@example.com', 'preferred_locale' => 'fr']);
-        $this->assertDatabaseHas('customers', ['business_name' => 'Scan Business', 'account_type' => 'individual']);
+        $this->assertDatabaseHas('customers', ['business_name' => 'Scan User', 'account_type' => 'individual']);
     }
 
     public function test_registration_requires_a_supported_account_type(): void
@@ -62,5 +62,20 @@ class RegistrationTest extends TestCase
 
         $this->assertGuest();
         $this->assertDatabaseMissing('users', ['email' => 'segment@example.com']);
+    }
+
+    public function test_business_registration_requires_a_business_name(): void
+    {
+        $this->post('/register', [
+            'name' => 'Business Owner',
+            'business_name' => '',
+            'account_type' => 'business',
+            'email' => 'owner@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertSessionHasErrors('business_name');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'owner@example.com']);
     }
 }
