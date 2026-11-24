@@ -32,7 +32,7 @@ class PrivacyExportController extends Controller
         $payload = [
             'exported_at' => now()->toIso8601String(),
             'account' => $request->user()->only(['name', 'first_name', 'last_name', 'email', 'preferred_locale', 'created_at']),
-            'organization' => ['name' => $customer->business_name, 'status' => $customer->status, 'role' => 'owner'],
+            'organization' => ['name' => $customer->business_name, 'account_type' => $customer->account_type, 'status' => $customer->status, 'role' => 'owner'],
             'team' => $customer->users()->get()->map(fn ($user): array => ['name' => $user->name, 'email' => $user->email, 'role' => $user->pivot->role, 'status' => $user->pivot->status]),
             'products' => $products,
             'scan_summary' => $scanSummary,

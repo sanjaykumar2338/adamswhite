@@ -22,6 +22,7 @@ return [
         'invitation_accepted' => 'Invitation accepted.',
         'invitation_revoked' => 'Invitation revoked.',
         'profile_updated' => 'Profile updated.',
+        'account_type_updated' => 'Account type updated.',
         'password_updated' => 'Password updated.',
         'sessions_revoked' => 'Other connected sessions were revoked.',
         'deletion_requested' => 'Your deletion request was submitted for administrative review.',

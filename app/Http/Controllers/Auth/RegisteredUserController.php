@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -37,6 +38,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'business_name' => 'required|string|max:255',
+            'account_type' => ['required', Rule::in(Customer::ACCOUNT_TYPES)],
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -51,6 +53,7 @@ class RegisteredUserController extends Controller
 
             $customer = Customer::create([
                 'business_name' => $request->business_name,
+                'account_type' => $request->account_type,
                 'max_products' => 10,
             ]);
 

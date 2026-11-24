@@ -35,8 +35,7 @@ class DashboardController extends Controller
         $eligibleScans = ScanEvent::query()
             ->where('customer_id', $customer->id)
             ->when($locationId, fn ($query, int $location) => $query->whereHas('product', fn ($product) => $product->where('location_id', $location)))
-            ->where('result', 'redirected')
-            ->where('is_probable_bot', false);
+            ->genuine();
         $totalScans = (clone $eligibleScans)->count();
         $scansToday = (clone $eligibleScans)->whereBetween('scanned_at', [$today->startOfDay(), $today->endOfDay()])->count();
         $scansSevenDays = (clone $eligibleScans)->where('scanned_at', '>=', $firstSevenDay->startOfDay())->count();
@@ -58,6 +57,18 @@ class DashboardController extends Controller
 
             return ['day' => $day, 'total' => (int) ($dailyTotals[$day] ?? 0)];
         });
+        $milestoneThreshold = max(1, (int) config('services.shiftrix.scan_milestone_threshold', 10));
+        $milestoneEnabled = (bool) config('services.shiftrix.scan_milestone_enabled', false);
+        $genuineScanTotal = $milestoneEnabled
+            ? ($locationId
+                ? ScanEvent::query()->where('customer_id', $customer->id)->genuine()->count()
+                : $totalScans)
+            : 0;
+        $scanMilestone = $milestoneEnabled
+            && $genuineScanTotal >= $milestoneThreshold
+            && $customer->genuine_scan_milestone_dismissed_at === null
+                ? ['threshold' => $milestoneThreshold, 'count' => $genuineScanTotal]
+                : null;
 
         return Inertia::render('Dashboard', [
             'customer' => $customer,
@@ -80,6 +91,7 @@ class DashboardController extends Controller
                 'reviewConfigured' => $products->contains(fn ($product): bool => filled($product->google_review_url)),
                 'firstScanReceived' => $totalScans > 0,
             ],
+            'scanMilestone' => $scanMilestone,
             'timezone' => config('app.timezone'),
         ]);
     }

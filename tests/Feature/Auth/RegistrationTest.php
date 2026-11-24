@@ -21,6 +21,7 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test User',
             'business_name' => 'Test Business',
+            'account_type' => 'business',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -28,6 +29,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('customers', ['business_name' => 'Test Business', 'account_type' => 'business']);
     }
 
     public function test_registration_returns_to_scanned_product(): void
@@ -35,11 +37,30 @@ class RegistrationTest extends TestCase
         $this->withSession(['url.intended' => '/?id=CARD-00001', 'locale' => 'fr'])->post('/register', [
             'name' => 'Scan User',
             'business_name' => 'Scan Business',
+            'account_type' => 'individual',
             'email' => 'scan@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ])->assertRedirect('/?id=CARD-00001');
 
         $this->assertDatabaseHas('users', ['email' => 'scan@example.com', 'preferred_locale' => 'fr']);
+        $this->assertDatabaseHas('customers', ['business_name' => 'Scan Business', 'account_type' => 'individual']);
+    }
+
+    public function test_registration_requires_a_supported_account_type(): void
+    {
+        $payload = [
+            'name' => 'Segmented User',
+            'business_name' => 'Segmented Workspace',
+            'email' => 'segment@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ];
+
+        $this->post('/register', $payload)->assertSessionHasErrors('account_type');
+        $this->post('/register', [...$payload, 'account_type' => 'unsupported'])->assertSessionHasErrors('account_type');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'segment@example.com']);
     }
 }

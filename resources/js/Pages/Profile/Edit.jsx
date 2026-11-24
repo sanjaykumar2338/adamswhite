@@ -5,6 +5,7 @@ import PrivacySettings from './Partials/PrivacySettings';
 import SecuritySettings from './Partials/SecuritySettings';
 import TeamSettings from './Partials/TeamSettings';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import AccountTypeSettings from './Partials/AccountTypeSettings';
 
 export default function Edit({ mustVerifyEmail, status, activeTab, customer, role, members, invitations, sessions, deletionRequest }) {
     const { t } = useTranslation();
@@ -17,7 +18,7 @@ export default function Edit({ mustVerifyEmail, status, activeTab, customer, rol
             <section className="premium-hero rounded-3xl px-6 py-7 text-white shadow-xl shadow-[#0B132B]/10 sm:px-8 sm:py-9"><p className="text-xs font-black uppercase tracking-[.22em] text-[#FFDC7A]">{t('settings.eyebrow')}</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">{t('settings.title')}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">{t('settings.intro')}</p></section>
             {flash.success && <div role="status" className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800">{flash.success}</div>}
             <nav className="mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:flex" aria-label={t('settings.tabs')}>{tabs.map(([key, label]) => <Link key={key} href={route('profile.edit', { tab: key })} className={`rounded-xl px-3 py-3 text-center text-sm font-black transition sm:px-4 ${activeTab === key ? 'bg-[#F4B942] text-[#0B132B]' : 'text-slate-500 hover:bg-slate-100 hover:text-[#0B132B]'}`}>{label}</Link>)}</nav>
-            <div className="mt-5">{activeTab === 'profile' && <UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} />}{activeTab === 'security' && <SecuritySettings sessions={sessions} />}{activeTab === 'team' && <TeamSettings customer={customer} role={role} members={members} invitations={invitations} />}{activeTab === 'privacy' && <PrivacySettings role={role} deletionRequest={deletionRequest} />}</div>
+            <div className="mt-5">{activeTab === 'profile' && <><UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} /><AccountTypeSettings customer={customer} role={role} /></>}{activeTab === 'security' && <SecuritySettings sessions={sessions} />}{activeTab === 'team' && <TeamSettings customer={customer} role={role} members={members} invitations={invitations} />}{activeTab === 'privacy' && <PrivacySettings role={role} deletionRequest={deletionRequest} />}</div>
         </div>
     </AuthenticatedLayout>;
 }

@@ -8,11 +8,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
-    protected $fillable = ['business_name', 'status', 'max_products', 'admin_notes', 'blocked_at', 'blocked_by'];
+    public const ACCOUNT_TYPE_BUSINESS = 'business';
+
+    public const ACCOUNT_TYPE_INDIVIDUAL = 'individual';
+
+    public const ACCOUNT_TYPES = [
+        self::ACCOUNT_TYPE_BUSINESS,
+        self::ACCOUNT_TYPE_INDIVIDUAL,
+    ];
+
+    protected $fillable = [
+        'business_name', 'account_type', 'status', 'max_products', 'admin_notes', 'blocked_at', 'blocked_by',
+        'genuine_scan_milestone_dismissed_at',
+    ];
 
     protected function casts(): array
     {
-        return ['blocked_at' => 'datetime'];
+        return [
+            'blocked_at' => 'datetime',
+            'genuine_scan_milestone_dismissed_at' => 'datetime',
+        ];
     }
 
     public function users(): BelongsToMany

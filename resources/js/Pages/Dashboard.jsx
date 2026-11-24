@@ -2,6 +2,7 @@ import ScanActivityChart from "@/Components/ScanActivityChart";
 import AnimatedNumber from "@/Components/AnimatedNumber";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useTranslation } from "@/i18n";
+import { dashboardWelcomeKey } from "@/lib/customerExperience";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
@@ -14,6 +15,7 @@ export default function Dashboard({
     timezone,
     locations,
     selectedLocation,
+    scanMilestone,
 }) {
     const { locale, t } = useTranslation();
     const page = usePage();
@@ -21,6 +23,7 @@ export default function Dashboard({
     const supportEmail = page.props.support.email;
     const supportUrl = page.props.support.whatsappUrl || `mailto:${supportEmail}`;
     const firstName = page.props.auth.user.name.trim().split(/\s+/)[0];
+    const milestoneForm = useForm({});
     const metrics = [
         {
             label: t("dashboard.total_eligible"),
@@ -61,13 +64,18 @@ export default function Dashboard({
                     </div>
                 )}
 
+                {scanMilestone && <aside role="status" className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#F4B942]/35 bg-amber-50/70 p-4 text-[#0B132B] shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                    <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0B132B] font-black text-[#FFDC7A]">{scanMilestone.threshold}</span><div><p className="font-black">{t('dashboard.milestone_title', { count: scanMilestone.threshold })}</p><p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{t('dashboard.milestone_body')}</p></div></div>
+                    <button type="button" disabled={milestoneForm.processing} onClick={() => milestoneForm.patch(route('scan-milestone.dismiss'), { preserveScroll: true })} className="shrink-0 rounded-xl border border-[#0B132B]/15 bg-white px-4 py-2.5 text-sm font-black text-[#0B132B] hover:border-[#F4B942] disabled:opacity-50">{t('dashboard.milestone_dismiss')}</button>
+                </aside>}
+
                 <section className="relative overflow-hidden rounded-[1.75rem] bg-[#0B132B] px-6 py-7 text-white shadow-xl shadow-[#0B132B]/15 sm:px-8 lg:flex lg:items-end lg:justify-between lg:px-10 lg:py-9">
                     <div className="relative z-10">
                         <p className="text-xs font-bold uppercase tracking-[.25em] text-[#FFDC7A]">
                             {t("dashboard.overview_label")}
                         </p>
                         <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                            {t("dashboard.welcome_back", { name: firstName })}
+                            {t(dashboardWelcomeKey(customer.account_type), { name: firstName })}
                         </h1>
                         <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">
                             {customer.business_name} ·{" "}

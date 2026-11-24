@@ -16,6 +16,7 @@ export default function AuthenticatedLayout({ header, children }) {
         { label: t('nav.overview'), href: route('dashboard'), active: route().current('dashboard'), icon: 'home' },
         { label: t('nav.my_products'), href: route('products.index'), active: route().current('products.*'), icon: 'products' },
         { label: t('nav.statistics'), href: route('statistics.index'), active: route().current('statistics.*'), icon: 'chart' },
+        { label: t('nav.circle'), href: route('circle.index'), active: route().current('circle.*'), icon: 'circle' },
         { label: t('nav.settings'), href: route('profile.edit'), active: route().current('profile.*') || route().current('team.*'), icon: 'settings' },
         { label: t('nav.help'), href: route('help'), active: route().current('help'), icon: 'help' },
     ];
@@ -90,7 +91,7 @@ function SidebarContent({ dashboardUrl, helpUrl, links, supportEmail, supportUrl
 }
 
 function NavIcon({ type }) {
-    const paths = { home: 'M3 11.5 12 4l9 7.5M5.5 10v10h13V10M9 20v-6h6v6', products: 'm12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 0v9m8-4.5-8 4.5m-8-4.5 8 4.5', chart: 'M5 20V10m7 10V4m7 16v-7', settings: 'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8-3.5 2-1-2-3-2 .5-1.5-1.5.5-2L14 3l-2 2-2-2-3 2 .5 2L6 8.5 4 8l-2 3 2 1v2l-2 1 2 3 2-.5L7.5 19 7 21l3 2 2-2 2 2 3-2-.5-2 1.5-1.5 2 .5 2-3-2-1v-2Z', help: 'M9.5 9a2.7 2.7 0 1 1 4.2 2.25c-1.1.73-1.7 1.18-1.7 2.25M12 18h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z', accounts: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', team: 'M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 9v-2a6 6 0 0 0-12 0v2m14-9v6m3-3h-6', batch: 'M4 7h16M5 7l1-3h12l1 3v13H5V7Zm4 4h6', activity: 'M3 12h4l2-6 4 12 2-6h6' };
+    const paths = { home: 'M3 11.5 12 4l9 7.5M5.5 10v10h13V10M9 20v-6h6v6', products: 'm12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 0v9m8-4.5-8 4.5m-8-4.5 8 4.5', chart: 'M5 20V10m7 10V4m7 16v-7', circle: 'M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5m1-8v4m2-2h-4', settings: 'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8-3.5 2-1-2-3-2 .5-1.5-1.5.5-2L14 3l-2 2-2-2-3 2 .5 2L6 8.5 4 8l-2 3 2 1v2l-2 1 2 3 2-.5L7.5 19 7 21l3 2 2-2 2 2 3-2-.5-2 1.5-1.5 2 .5 2-3-2-1v-2Z', help: 'M9.5 9a2.7 2.7 0 1 1 4.2 2.25c-1.1.73-1.7 1.18-1.7 2.25M12 18h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z', accounts: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', team: 'M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 9v-2a6 6 0 0 0-12 0v2m14-9v6m3-3h-6', batch: 'M4 7h16M5 7l1-3h12l1 3v13H5V7Zm4 4h6', activity: 'M3 12h4l2-6 4 12 2-6h6' };
     return <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" d={paths[type] || paths.home} /></svg>;
 }
 function MenuIcon() { return <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeWidth="2" d="M4 7h16M4 12h16M4 17h16" /></svg>; }

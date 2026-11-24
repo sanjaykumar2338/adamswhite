@@ -8,6 +8,9 @@ return [
         'whatsapp_url' => env('SHIFTRIX_WHATSAPP_URL', '+1 601 871 0613'),
         'nfc_base_url' => env('SHIFTRIX_NFC_BASE_URL', 'https://app.shiftrix.io/'),
         'tutorial_video_url' => env('SHIFTRIX_TUTORIAL_VIDEO_URL'),
+        'scan_milestone_enabled' => env('SHIFTRIX_SCAN_MILESTONE_ENABLED', false),
+        'scan_milestone_threshold' => (int) env('SHIFTRIX_SCAN_MILESTONE_THRESHOLD', 10),
+        'circle_url' => env('SHIFTRIX_CIRCLE_URL', 'https://circle.shiftrix.io'),
     ],
 
     'ipinfo_lite' => [

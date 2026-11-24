@@ -22,6 +22,7 @@ return [
         'invitation_accepted' => 'Invitation acceptée.',
         'invitation_revoked' => 'Invitation révoquée.',
         'profile_updated' => 'Profil mis à jour.',
+        'account_type_updated' => 'Type de compte mis à jour.',
         'password_updated' => 'Mot de passe mis à jour.',
         'sessions_revoked' => 'Les autres sessions connectées ont été révoquées.',
         'deletion_requested' => 'Votre demande de suppression a été transmise pour examen administratif.',

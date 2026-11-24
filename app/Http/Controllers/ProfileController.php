@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Customer;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -56,6 +58,20 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('success', __('ui.flash.profile_updated'));
+    }
+
+    public function updateAccountType(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'account_type' => ['required', Rule::in(Customer::ACCOUNT_TYPES)],
+        ]);
+        $customer = $request->user()->currentCustomer();
+
+        abort_unless($customer && $request->user()->roleFor($customer) === 'owner', 403);
+
+        $customer->update($validated);
+
+        return Redirect::route('profile.edit')->with('success', __('ui.flash.account_type_updated'));
     }
 
     /**

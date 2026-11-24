@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ManagerController as AdminManagerController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\StatisticsController as AdminStatisticsController;
+use App\Http\Controllers\CircleController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\CustomerStatisticsController;
 use App\Http\Controllers\DashboardController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PrivacyExportController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScanMilestoneController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\StatisticsExportController;
 use App\Http\Controllers\TeamController;
@@ -40,6 +42,8 @@ Route::get('/cookies', fn () => Inertia::render('Legal', ['titleKey' => 'legal.c
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->middleware('customer.access')->name('dashboard');
+    Route::get('/circle', CircleController::class)->middleware('customer.access')->name('circle.index');
+    Route::patch('/dashboard/scan-milestone', [ScanMilestoneController::class, 'update'])->middleware('customer.access')->name('scan-milestone.dismiss');
     Route::get('/products', [ProductController::class, 'index'])->middleware('customer.access')->name('products.index');
     Route::post('/activations', [ActivationController::class, 'store'])->middleware(['customer.access', 'throttle:20,1'])->name('activations.store');
     Route::patch('/products/{product}', [ProductController::class, 'update'])->middleware('customer.access')->name('products.update');
@@ -86,6 +90,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->middleware('customer.access')->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('customer.access')->name('profile.update');
+    Route::patch('/profile/account-type', [ProfileController::class, 'updateAccountType'])->middleware('customer.access')->name('profile.account-type.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
