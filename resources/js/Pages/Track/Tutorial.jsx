@@ -2,10 +2,14 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import PublicFooter from '@/Components/PublicFooter';
 import { useTranslation } from '@/i18n';
+import { pauseAndReset } from '@/lib/mediaControls';
 import { Head, Link } from '@inertiajs/react';
+import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
-export default function Tutorial({ product, continueUrl, videoUrl, videoType }) {
-    const { t } = useTranslation();
+export default function Tutorial({ product, continueUrl, videoUrl, videoType, posterUrl }) {
+    const { locale, t } = useTranslation();
+    const videoRef = useRef(null);
+    const resetVideo = useCallback(() => pauseAndReset(videoRef.current), []);
     const steps = [
         ['account', 'account_text'],
         ['destination', 'destination_text'],
@@ -17,7 +21,7 @@ export default function Tutorial({ product, continueUrl, videoUrl, videoType }) 
         <header className="border-b border-white/10 bg-[#081027] text-white">
             <div className="mx-auto flex h-[4.75rem] max-w-7xl items-center justify-between px-5 sm:px-8">
                 <Link href={route('home')} aria-label="SHIFTRIX Track"><ApplicationLogo className="h-9 w-36 sm:h-10 sm:w-52" dark /></Link>
-                <LanguageSwitcher dark />
+                <LanguageSwitcher dark onBeforeChange={resetVideo} />
             </div>
         </header>
 
@@ -38,8 +42,8 @@ export default function Tutorial({ product, continueUrl, videoUrl, videoType }) 
                 <div>
                     <div className="aspect-video overflow-hidden rounded-3xl border border-slate-200 bg-[#0B132B] shadow-xl shadow-slate-200/70">
                         {videoUrl ? videoType === 'file'
-                            ? <video className="h-full w-full" controls preload="metadata" src={videoUrl}>{t('tutorial.video_fallback')}</video>
-                            : <iframe className="h-full w-full" src={videoUrl} title={t('tutorial.video_title')} allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                            ? <TutorialVideo key={`${locale}:${videoUrl}`} ref={videoRef} src={videoUrl} poster={posterUrl} fallback={t('tutorial.video_fallback')} />
+                            : <iframe key={`${locale}:${videoUrl}`} className="h-full w-full" src={videoUrl} title={t('tutorial.video_title')} allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
                             : <div className="flex h-full flex-col items-center justify-center px-8 text-center text-white"><VideoIcon /><p className="mt-4 text-lg font-black">{t('tutorial.video_placeholder')}</p><p className="mt-2 max-w-md text-sm leading-6 text-slate-400">{t('tutorial.video_placeholder_help')}</p></div>}
                     </div>
                 </div>
@@ -54,5 +58,16 @@ export default function Tutorial({ product, continueUrl, videoUrl, videoType }) 
         <PublicFooter dark />
     </div>;
 }
+
+const TutorialVideo = forwardRef(function TutorialVideo({ src, poster, fallback }, ref) {
+    useEffect(() => {
+        const player = ref.current;
+        player?.load();
+
+        return () => pauseAndReset(player);
+    }, [ref, src]);
+
+    return <video ref={ref} className="h-full w-full" controls playsInline preload="metadata" src={src} {...(poster ? { poster } : {})}>{fallback}</video>;
+});
 
 function VideoIcon() { return <svg className="h-12 w-12 text-[#FFDC7A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3" y="5" width="14" height="14" rx="2" strokeWidth="1.6"/><path d="m17 10 4-2v8l-4-2" strokeWidth="1.6" strokeLinejoin="round"/><path d="m9 9 4 3-4 3V9Z" fill="currentColor" stroke="none"/></svg>; }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Services\ReviewUrlValidator;
 use App\Services\ScanRecorder;
+use App\Support\TutorialMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +13,7 @@ use Inertia\Response;
 
 class TrackController extends Controller
 {
-    public function __invoke(Request $request, ScanRecorder $recorder, ReviewUrlValidator $validator): RedirectResponse|Response
+    public function __invoke(Request $request, ScanRecorder $recorder, ReviewUrlValidator $validator, TutorialMedia $tutorialMedia): RedirectResponse|Response
     {
         $started = microtime(true);
         $rawCode = $request->query('id');
@@ -57,7 +58,7 @@ class TrackController extends Controller
             $continueUrl = route('activation.lookup', $query, absolute: false);
             $request->session()->put('pending_product_code', $product->code_id);
             $request->session()->put('url.intended', $continueUrl);
-            $videoUrl = $this->tutorialVideoUrl();
+            $media = $tutorialMedia->forLocale(app()->getLocale());
 
             return Inertia::render('Track/Tutorial', [
                 'product' => [
@@ -65,8 +66,7 @@ class TrackController extends Controller
                     'image_url' => $product->image_url,
                 ],
                 'continueUrl' => $continueUrl,
-                'videoUrl' => $videoUrl,
-                'videoType' => $videoUrl && preg_match('/\.(mp4|webm)(?:\?.*)?$/i', $videoUrl) ? 'file' : 'embed',
+                ...$media,
             ]);
         }
 
@@ -95,12 +95,4 @@ class TrackController extends Controller
         ]);
     }
 
-    private function tutorialVideoUrl(): ?string
-    {
-        $url = trim((string) config('services.shiftrix.tutorial_video_url'));
-
-        return filter_var($url, FILTER_VALIDATE_URL) && parse_url($url, PHP_URL_SCHEME) === 'https'
-            ? $url
-            : null;
-    }
 }

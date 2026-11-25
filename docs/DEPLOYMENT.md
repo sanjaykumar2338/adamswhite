@@ -36,6 +36,8 @@ Official hosting references checked for this audit:
 
 1. Create `staging-app.shiftrix.io` in Namecheap with a separate database and document root pointing to `public/`. Do not change `shiftrix.io` DNS or Shopify.
 2. Deploy the reviewed commit, configure `APP_ENV=staging`, `APP_DEBUG=false`, the staging `APP_URL`, `SHIFTRIX_NFC_BASE_URL`, optional `SHIFTRIX_TUTORIAL_VIDEO_URL`, staging SMTP, a unique `APP_KEY`, `SESSION_SECURE_COOKIE=true`, and `SESSION_ENCRYPT=true`.
+
+Localized tutorial media is activated automatically only when the approved files are present in `public/videos`: `tutorial-en.mp4` and `tutorial-fr.mp4`. Optional, independent thumbnails use `tutorial-en-poster.jpg` and `tutorial-fr-poster.jpg`. Until the MP4 for the active language exists, the application keeps using `SHIFTRIX_TUTORIAL_VIDEO_URL` (or the existing empty-state message when that setting is blank). Do not add substitute language files or placeholder videos.
 3. Run migrations, caches, the dry-run inventory validation, and then a staging-only import. Never upload the XLSX beneath a public document root.
 4. Smoke-test Shiftrix Track directly at `/?id=CODE_ID` for unactivated, active, paused, unconfigured and unknown products.
 5. Confirm the legacy `/configuration?id=CODE_ID` route returns a 301 to the canonical root URL without recording a duplicate scan.
