@@ -1,5 +1,12 @@
 <?php
 
+$mailBrandName = 'SHIFTRIX Track';
+$mailFromName = env('MAIL_FROM_NAME', $mailBrandName);
+
+if ($mailFromName === 'Shiftrix Track') {
+    $mailFromName = $mailBrandName;
+}
+
 return [
 
     /*
@@ -112,7 +119,9 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Shiftrix Track')),
+        'name' => $mailFromName,
     ],
+
+    'brand_name' => $mailBrandName,
 
 ];
