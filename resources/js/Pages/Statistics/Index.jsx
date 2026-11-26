@@ -4,6 +4,7 @@ import { countryName } from "@/countryNames";
 import { useTranslation } from "@/i18n";
 import { Head, Link } from "@inertiajs/react";
 import ReactApexChart from "react-apexcharts";
+import { shortWeekday } from '@/lib/localizedDates';
 
 export default function StatisticsIndex({
     days,
@@ -22,29 +23,32 @@ export default function StatisticsIndex({
     selectedLocation,
 }) {
     const { t, locale } = useTranslation();
-    const weekdayLabels = Array.from({ length: 7 }, (_, day) =>
-        new Intl.DateTimeFormat(locale, {
-            weekday: "short",
-            timeZone: "UTC",
-        }).format(new Date(Date.UTC(2026, 10, 15 + day))),
-    );
+    const weekdayLabels = Array.from({ length: 7 }, (_, day) => shortWeekday(Date.UTC(2026, 10, 15 + day), locale));
     const deviceLabels = devices.map((item) =>
         t(`statistics.device_${item.category}`),
     );
-    const baseBar = (categories) => ({
+    const deviceTotal = devices.reduce((sum, item) => sum + Number(item.total), 0);
+    const leadingDevice = devices.reduce((leader, item) => Number(item.total) > Number(leader?.total ?? -1) ? item : leader, null);
+    const leadingDevicePercent = deviceTotal && leadingDevice ? Math.round((Number(leadingDevice.total) / deviceTotal) * 100) : 0;
+    const baseBar = (categories, hourlyAxis = false) => ({
         chart: {
             toolbar: { show: false },
             fontFamily: "Inter, sans-serif",
             foreColor: "#64748b",
         },
-        colors: ["#F4B942"],
-        plotOptions: { bar: { borderRadius: 5, columnWidth: "55%" } },
+        colors: ["#E6C87A"],
+        plotOptions: { bar: { borderRadius: 4, columnWidth: "35%" } },
         dataLabels: { enabled: false },
         grid: { borderColor: "#e2e8f0", strokeDashArray: 4 },
         xaxis: {
             categories,
             axisBorder: { show: false },
             axisTicks: { show: false },
+            labels: {
+                rotate: 0,
+                hideOverlappingLabels: true,
+                formatter: hourlyAxis ? (value) => Number.parseInt(value, 10) % 4 === 0 ? value : "" : undefined,
+            },
         },
         yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0 },
         tooltip: {
@@ -57,11 +61,29 @@ export default function StatisticsIndex({
     const deviceOptions = {
         chart: { toolbar: { show: false }, fontFamily: "Inter, sans-serif" },
         labels: deviceLabels,
-        colors: ["#F4B942", "#0B132B", "#6883BA", "#CBD5E1"],
+        colors: ["#E6C87A", "#0B1120", "#94A3B8", "#CBD5E1"],
         legend: { position: "bottom" },
         dataLabels: { enabled: total > 0 },
         stroke: { colors: ["#fff"], width: 3 },
         noData: { text: t("statistics.empty") },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: "72%",
+                    labels: {
+                        show: true,
+                        name: { show: true, offsetY: 18 },
+                        value: { show: false },
+                        total: {
+                            show: true,
+                            showAlways: true,
+                            label: leadingDevice ? t(`statistics.device_${leadingDevice.category}`) : t("statistics.devices"),
+                            formatter: () => `${leadingDevicePercent}%`,
+                        },
+                    },
+                },
+            },
+        },
     };
 
     return (
@@ -69,7 +91,7 @@ export default function StatisticsIndex({
             header={
                 <>
                     <p
-                        className="text-xs font-bold uppercase tracking-[.2em] text-[#B7791F]"
+                        className="text-xs font-bold uppercase tracking-[.2em] text-[#8F6D1E]"
                         translate="no"
                     >
                         SHIFTRIX TRACK
@@ -82,9 +104,9 @@ export default function StatisticsIndex({
         >
             <Head title={t("statistics.title")} />
             <div className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 lg:px-8 xl:px-10">
-                <section className="premium-hero rounded-3xl px-6 py-7 text-white shadow-xl shadow-[#0B132B]/10 sm:px-8 lg:flex lg:items-end lg:justify-between">
+                <section className="premium-hero rounded-2xl px-6 py-7 text-white shadow-xl shadow-[#0B1120]/10 sm:px-8 lg:flex lg:items-end lg:justify-between">
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-[.22em] text-[#FFDC7A]">
+                        <p className="text-xs font-bold uppercase tracking-[.22em] text-[#E6C87A]">
                             {t("statistics.eyebrow")}
                         </p>
                         <h1 className="mt-2 text-3xl font-black sm:text-4xl">
@@ -96,14 +118,14 @@ export default function StatisticsIndex({
                     </div>
                     <a
                         href={route("statistics.export", { days, location: selectedLocation || undefined })}
-                        className="mt-5 inline-flex rounded-xl bg-[#F4B942] px-5 py-3 text-sm font-black text-[#0B132B] hover:bg-[#FFDC7A] lg:mt-0"
+                        className="mt-5 inline-flex rounded-[10px] bg-[#E6C87A] px-5 py-3 text-sm font-black text-[#0B1120] hover:bg-[#E6C87A] lg:mt-0"
                     >
                         {t("statistics.export")}
                     </a>
                 </section>
 
                 <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-                    <div className="inline-flex rounded-xl bg-slate-100 p-1">
+                    <div className="inline-flex rounded-[10px] bg-slate-100 p-1">
                         {[7, 30, 90].map((value) => (
                             <Link
                                 key={value}
@@ -112,7 +134,7 @@ export default function StatisticsIndex({
                                     location: selectedLocation || undefined,
                                 })}
                                 preserveScroll
-                                className={`rounded-lg px-4 py-2 text-sm font-black ${days === value ? "bg-[#0B132B] text-white shadow-sm" : "text-slate-600"}`}
+                                className={`rounded-lg px-4 py-2 text-sm font-black ${days === value ? "bg-[#0B1120] text-white shadow-sm" : "text-slate-600"}`}
                             >
                                 {t("statistics.days", { count: value })}
                             </Link>
@@ -120,14 +142,14 @@ export default function StatisticsIndex({
                     </div>
                     <label className="flex items-center gap-2 text-sm font-bold text-slate-500">
                         {t("locations.filter")}
-                        <select value={selectedLocation || ""} onChange={(event) => window.location.assign(route("statistics.index", { days, location: event.target.value || undefined }))} className="rounded-xl border-slate-200 py-2 text-sm text-[#0B132B] focus:border-[#F4B942] focus:ring-[#F4B942]">
+                        <select value={selectedLocation || ""} onChange={(event) => window.location.assign(route("statistics.index", { days, location: event.target.value || undefined }))} className="rounded-[10px] border-slate-200 py-2 text-sm text-[#0B1120] focus:border-[#E6C87A] focus:ring-[#E6C87A]">
                             <option value="">{t("locations.all")}</option>
                             {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
                         </select>
                     </label>
                     <p className="text-sm font-semibold text-slate-500">
                         {t("statistics.timezone")}:{" "}
-                        <span className="text-[#0B132B]">{timezone}</span>
+                        <span className="text-[#0B1120]">{timezone}</span>
                     </p>
                 </div>
 
@@ -176,12 +198,12 @@ export default function StatisticsIndex({
                     />
                 </div>
 
-                <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-[.18em] text-[#B7791F]">
+                        <p className="text-xs font-bold uppercase tracking-[.18em] text-[#8F6D1E]">
                             {t("statistics.trend")}
                         </p>
-                        <h2 className="mt-1 text-xl font-black text-[#0B132B]">
+                        <h2 className="mt-1 text-xl font-black text-[#0B1120]">
                             {t("statistics.daily_scans")}
                         </h2>
                     </div>
@@ -224,7 +246,7 @@ export default function StatisticsIndex({
                                 hourly.map(
                                     (item) =>
                                         `${String(item.hour).padStart(2, "0")}h`,
-                                ),
+                                ), true,
                             )}
                             series={[
                                 {
@@ -238,7 +260,7 @@ export default function StatisticsIndex({
                 <div className="mt-5 grid gap-5 xl:grid-cols-3">
                     <ChartCard
                         title={t("statistics.devices")}
-                        empty={total === 0}
+                        empty={deviceTotal === 0}
                         t={t}
                     >
                         <ReactApexChart
@@ -248,8 +270,8 @@ export default function StatisticsIndex({
                             series={devices.map((item) => item.total)}
                         />
                     </ChartCard>
-                    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-                        <h2 className="text-lg font-black text-[#0B132B]">
+                    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                        <h2 className="text-lg font-black text-[#0B1120]">
                             {t("statistics.countries")}
                         </h2>
                         {countries.length ? (
@@ -257,7 +279,7 @@ export default function StatisticsIndex({
                                 {countries.map((item) => (
                                     <div
                                         key={item.country}
-                                        className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
+                                        className="flex items-center justify-between rounded-[10px] bg-slate-50 px-4 py-3"
                                     >
                                         <span className="text-sm font-bold text-slate-700">
                                             {countryName(
@@ -266,7 +288,7 @@ export default function StatisticsIndex({
                                                 t("statistics.country_unknown"),
                                             )}
                                         </span>
-                                        <span className="rounded-lg bg-[#FFF4D6] px-3 py-1 text-sm font-black text-[#9A6417]">
+                                        <span className="rounded-lg bg-[#FBF7EC] px-3 py-1 text-sm font-black text-[#8F6D1E]">
                                             {item.total}
                                         </span>
                                     </div>
@@ -300,17 +322,7 @@ export default function StatisticsIndex({
                         label={(row) => row.name}
                     />
                 </div>
-                <p className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-xs leading-5 text-blue-800">
-                    {t("statistics.metadata_note")}{" "}
-                    <a
-                        href="https://ipinfo.io"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-bold underline decoration-blue-300 underline-offset-2 hover:text-blue-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F4B942]"
-                    >
-                        {t("statistics.ipinfo_attribution")}
-                    </a>
-                </p>
+                <details className="mt-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-xs leading-5 text-slate-600"><summary className="cursor-pointer font-semibold text-[#8F6D1E]">{t("statistics.about_data")}</summary><p className="mt-3">{t("statistics.metadata_note")} <a href="https://ipinfo.io" target="_blank" rel="noreferrer" className="font-semibold underline decoration-[#E6C87A] underline-offset-2 hover:text-[#0B1120]">{t("statistics.ipinfo_attribution")}</a></p></details>
             </div>
         </AuthenticatedLayout>
     );
@@ -319,7 +331,7 @@ export default function StatisticsIndex({
 function Stat({ value, label, detail }) {
     return (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-2xl font-black text-[#0B132B]">{value}</p>
+            <p className="text-2xl font-black text-[#0B1120]">{value}</p>
             <p className="mt-1 text-sm font-bold text-slate-700">{label}</p>
             <p className="mt-1 text-xs text-slate-500">{detail}</p>
         </div>
@@ -327,8 +339,8 @@ function Stat({ value, label, detail }) {
 }
 function ChartCard({ title, empty, t, children }) {
     return (
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <h2 className="text-lg font-black text-[#0B132B]">{title}</h2>
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <h2 className="text-lg font-black text-[#0B1120]">{title}</h2>
             {empty ? <Empty t={t} /> : <div className="mt-3">{children}</div>}
         </section>
     );
@@ -343,8 +355,8 @@ function Empty({ t }) {
 function Ranking({ title, rows, locale, empty, label }) {
     const maximum = Math.max(...rows.map((row) => Number(row.total)), 1);
     return (
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <h2 className="text-lg font-black text-[#0B132B]">{title}</h2>
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <h2 className="text-lg font-black text-[#0B1120]">{title}</h2>
             {rows.length ? (
                 <div className="mt-5 space-y-4">
                     {rows.map((row, index) => (
@@ -356,13 +368,13 @@ function Ranking({ title, rows, locale, empty, label }) {
                                     </span>
                                     {label(row)}
                                 </span>
-                                <span className="shrink-0 font-black text-[#0B132B]">
+                                <span className="shrink-0 font-black text-[#0B1120]">
                                     {Number(row.total).toLocaleString(locale)}
                                 </span>
                             </div>
                             <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                                 <div
-                                    className="ranking-bar h-full rounded-full bg-gradient-to-r from-[#0B132B] to-[#F4B942]"
+                                    className="ranking-bar h-full rounded-full bg-[#E6C87A]"
                                     style={{
                                         width: `${Math.max((Number(row.total) / maximum) * 100, 4)}%`,
                                         animationDelay: `${index * 55}ms`,

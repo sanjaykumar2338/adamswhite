@@ -16,7 +16,7 @@ export default function AuthenticatedLayout({ header, children }) {
         { label: t('nav.overview'), href: route('dashboard'), active: route().current('dashboard'), icon: 'home' },
         { label: t('nav.my_products'), href: route('products.index'), active: route().current('products.*'), icon: 'products' },
         { label: t('nav.statistics'), href: route('statistics.index'), active: route().current('statistics.*'), icon: 'chart' },
-        { label: t('nav.circle'), href: 'https://circle.shiftrix.io', active: false, icon: 'circle', external: true },
+        { label: t('nav.circle'), href: 'https://af.uppromote.com/ik9dny-b4/register', active: false, icon: 'circle', external: true },
         { label: t('nav.settings'), href: route('profile.edit'), active: route().current('profile.*') || route().current('team.*'), icon: 'settings' },
         { label: t('nav.help'), href: route('help'), active: route().current('help'), icon: 'help' },
     ];
@@ -33,15 +33,15 @@ export default function AuthenticatedLayout({ header, children }) {
     ];
     const links = user.is_admin ? adminLinks : customerLinks;
 
-    return <div className="viewport-shell bg-[#f6f7fb] text-[#0B132B]">
-        <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto bg-[#0B132B] text-white shadow-2xl shadow-[#0B132B]/20 lg:flex">
+    return <div className="viewport-shell bg-[#F8FAFC] text-[#0B1120]">
+        <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto bg-[#0B1120] text-white shadow-2xl shadow-[#0B1120]/20 lg:flex">
             <SidebarContent dashboardUrl={dashboardUrl} helpUrl={helpUrl} links={links} supportEmail={support.email} supportUrl={support.whatsappUrl} user={user} t={t} />
         </aside>
 
         {open && <div className="fixed inset-0 z-50 lg:hidden">
             <button type="button" className="absolute inset-0 bg-[#050b1d]/65 backdrop-blur-sm" onClick={() => setOpen(false)} aria-label={t('common.close_menu')} />
-            <aside className="relative flex h-full w-[min(20rem,88vw)] flex-col overflow-y-auto bg-[#0B132B] text-white shadow-2xl">
-                <button type="button" onClick={() => setOpen(false)} className="absolute right-4 top-4 z-10 rounded-xl border border-white/15 bg-white/10 p-2 text-white" aria-label={t('common.close_menu')}><CloseIcon /></button>
+            <aside className="relative flex h-full w-[min(20rem,88vw)] flex-col overflow-y-auto bg-[#0B1120] text-white shadow-2xl">
+                <button type="button" onClick={() => setOpen(false)} className="absolute right-4 top-4 z-10 rounded-[10px] border border-white/15 bg-white/10 p-2 text-white" aria-label={t('common.close_menu')}><CloseIcon /></button>
                 <SidebarContent dashboardUrl={dashboardUrl} helpUrl={helpUrl} links={links} supportEmail={support.email} supportUrl={support.whatsappUrl} user={user} t={t} onNavigate={() => setOpen(false)} />
             </aside>
         </div>}
@@ -49,13 +49,13 @@ export default function AuthenticatedLayout({ header, children }) {
         <div className="viewport-shell lg:pl-72">
             <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
                 <div className="flex h-[4.75rem] items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8 xl:px-10">
-                    <button type="button" onClick={() => setOpen(true)} className="rounded-xl border border-slate-200 bg-white p-2.5 text-[#0B132B] shadow-sm lg:hidden" aria-label={t('common.menu')}><MenuIcon /></button>
-                    <Link href={dashboardUrl} className="mr-auto min-w-0 lg:hidden"><ApplicationLogo className="h-8 w-28 sm:h-9 sm:w-36" /></Link>
-                    <div className="mr-auto hidden min-w-0 lg:block">{header || <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#B7791F]" translate="no">SHIFTRIX TRACK</p><p className="mt-0.5 truncate text-sm font-semibold text-slate-500">{user.is_admin ? t('admin.workspace') : t('dashboard.workspace')}</p></>}</div>
+                    <button type="button" onClick={() => setOpen(true)} className="rounded-[10px] border border-slate-200 bg-white p-2.5 text-[#0B1120] shadow-sm lg:hidden" aria-label={t('common.menu')}><MenuIcon /></button>
+                    <Link href={dashboardUrl} className="mr-auto min-w-0 lg:hidden"><ApplicationLogo className="h-9 w-32 sm:h-10 sm:w-40" /></Link>
+                    <div className="mr-auto hidden min-w-0 lg:block">{header || <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#8F6D1E]" translate="no">SHIFTRIX TRACK</p><p className="mt-0.5 truncate text-sm font-semibold text-slate-500">{user.is_admin ? t('admin.workspace') : t('dashboard.workspace')}</p></>}</div>
                     {!user.is_admin && <WorkspaceSwitcher t={t} />}
                     <LanguageSwitcher />
                     <Dropdown>
-                        <Dropdown.Trigger><button type="button" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 pr-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:border-[#F4B942]/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0B132B] text-sm font-black text-[#FFDC7A]">{user.name.charAt(0).toUpperCase()}</span><span className="hidden max-w-40 truncate sm:block">{user.name}</span><ChevronIcon /></button></Dropdown.Trigger>
+                        <Dropdown.Trigger><button type="button" className="flex items-center gap-2 rounded-full bg-transparent p-0 text-sm font-semibold text-slate-700 sm:rounded-[10px] sm:border sm:border-slate-200 sm:bg-white sm:pr-2.5 sm:shadow-sm sm:hover:border-[#E6C87A]"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0B1120] text-sm font-bold text-[#E6C87A]">{user.name.charAt(0).toUpperCase()}</span><span className="hidden max-w-40 truncate sm:block">{user.name}</span><span className="hidden sm:block"><ChevronIcon /></span></button></Dropdown.Trigger>
                         <Dropdown.Content align="right">
                             {!user.is_admin && <Dropdown.Link href={route('team.index')}>{t('nav.team')}</Dropdown.Link>}
                             <Dropdown.Link href={route('profile.edit')}>{t('nav.profile')}</Dropdown.Link>
@@ -72,27 +72,27 @@ export default function AuthenticatedLayout({ header, children }) {
 function WorkspaceSwitcher({ t }) {
     const { auth } = usePage().props;
     if (!auth.workspaces || auth.workspaces.length < 2) return null;
-    return <Dropdown><Dropdown.Trigger><button type="button" className="hidden max-w-48 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 md:flex"><span className="truncate">{auth.workspaces.find(item => item.id === auth.currentWorkspaceId)?.business_name}</span><ChevronIcon /></button></Dropdown.Trigger><Dropdown.Content align="right">{auth.workspaces.map(workspace => <Dropdown.Link key={workspace.id} href={route('workspaces.update', workspace.id)} method="post" as="button">{workspace.business_name}{workspace.id === auth.currentWorkspaceId ? ` · ${t('common.current')}` : ''}</Dropdown.Link>)}</Dropdown.Content></Dropdown>;
+    return <Dropdown><Dropdown.Trigger><button type="button" className="hidden max-w-48 items-center gap-2 rounded-[10px] border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 md:flex"><span className="truncate">{auth.workspaces.find(item => item.id === auth.currentWorkspaceId)?.business_name}</span><ChevronIcon /></button></Dropdown.Trigger><Dropdown.Content align="right">{auth.workspaces.map(workspace => <Dropdown.Link key={workspace.id} href={route('workspaces.update', workspace.id)} method="post" as="button">{workspace.business_name}{workspace.id === auth.currentWorkspaceId ? ` · ${t('common.current')}` : ''}</Dropdown.Link>)}</Dropdown.Content></Dropdown>;
 }
 
 function SidebarContent({ dashboardUrl, helpUrl, links, supportEmail, supportUrl, user, t, onNavigate }) {
     return <>
-        <div className="shrink-0 border-b border-white/10 px-7 py-4"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-10 w-48" dark /></Link>{user.is_admin && <span className="mt-2 inline-flex rounded-full bg-[#F4B942] px-3 py-1 text-[.65rem] font-black uppercase tracking-[.18em] text-[#0B132B]">{t('admin.badge')}</span>}</div>
+        <div className="shrink-0 border-b border-white/10 px-7 py-4"><Link href={dashboardUrl} onClick={onNavigate}><ApplicationLogo className="h-10 w-48" dark /></Link>{user.is_admin && <span className="mt-2 inline-flex rounded-full bg-[#E6C87A] px-3 py-1 text-[.65rem] font-bold uppercase tracking-[.12em] text-[#0B1120]">{t('admin.badge')}</span>}</div>
         <div className="shrink-0 px-5 pt-4"><p className="px-3 text-[.68rem] font-bold uppercase tracking-[.24em] text-slate-500">{user.is_admin ? t('admin.console') : t('dashboard.customer_space')}</p></div>
         <nav className="mt-2 flex-1 space-y-1 px-4" aria-label={t('nav.primary')}>
             {links.map((item) => <NavigationItem key={item.label} item={item} onNavigate={onNavigate} />)}
         </nav>
-        <div className="group relative m-4 shrink-0 rounded-2xl border border-white/10 bg-white/[.06] p-3 transition hover:-translate-y-0.5 hover:border-[#F4B942]/50 hover:bg-white/10 focus-within:border-[#F4B942]/70 focus-within:ring-2 focus-within:ring-[#F4B942]/40">
+        <div className="group relative m-4 shrink-0 rounded-2xl border border-white/10 bg-white/[.06] p-3 transition hover:-translate-y-0.5 hover:border-[#E6C87A]/50 hover:bg-white/10 focus-within:border-[#E6C87A]/70 focus-within:ring-2 focus-within:ring-[#E6C87A]/40">
             <Link href={helpUrl} onClick={onNavigate} className="absolute inset-0 rounded-2xl focus:outline-none" aria-label={t('nav.open_help')} />
-            <div className="pointer-events-none relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#FFDC7A]">{t('nav.need_help')}</p><p className="mt-1 text-xs leading-5 text-slate-300">{t('nav.support_help')}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#FFDC7A]">{t('nav.open_help')} <span aria-hidden="true">→</span></span></div>
-            <a href={supportUrl || `mailto:${supportEmail}`} target={supportUrl ? '_blank' : undefined} rel={supportUrl ? 'noreferrer' : undefined} className="relative z-10 mt-3 flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:border-[#F4B942]/50 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFDC7A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B132B]"><SupportIcon />{t('nav.contact_support')}</a>
+            <div className="pointer-events-none relative"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#E6C87A]">{t('nav.need_help')}</p><p className="mt-1 text-xs leading-5 text-slate-300">{t('nav.support_help')}</p><span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#E6C87A]">{t('nav.open_help')} <span aria-hidden="true">→</span></span></div>
+            <a href={supportUrl || `mailto:${supportEmail}`} target={supportUrl ? '_blank' : undefined} rel={supportUrl ? 'noreferrer' : undefined} className="relative z-10 mt-3 flex items-center justify-center gap-2 rounded-[10px] border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:border-[#E6C87A]/50 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C87A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1120]"><SupportIcon />{t('nav.contact_support')}</a>
         </div>
     </>;
 }
 
 function NavigationItem({ item, onNavigate }) {
-    const className = `group flex items-center gap-3 rounded-r-xl border-l-[3px] px-3.5 py-2 text-sm font-semibold transition ${item.active ? 'border-[#F4B942] bg-[rgba(247,215,116,0.12)] text-[#FFDC7A]' : 'border-transparent text-slate-300 hover:bg-white/10 hover:text-white'}`;
-    const content = <><span className={`flex h-8 w-8 items-center justify-center rounded-lg ${item.active ? 'bg-white/[.06] text-[#FFDC7A]' : 'bg-white/[.06] text-slate-400 group-hover:text-[#FFDC7A]'}`}><NavIcon type={item.icon} /></span>{item.label}</>;
+    const className = `group flex items-center gap-3 rounded-r-xl border-l-[3px] px-3.5 py-2 text-sm font-semibold transition ${item.active ? 'border-[#E6C87A] bg-[rgba(247,215,116,0.12)] text-[#E6C87A]' : 'border-transparent text-slate-300 hover:bg-white/10 hover:text-white'}`;
+    const content = <><span className={`flex h-8 w-8 items-center justify-center rounded-lg ${item.active ? 'bg-white/[.06] text-[#E6C87A]' : 'bg-white/[.06] text-slate-400 group-hover:text-[#E6C87A]'}`}><NavIcon type={item.icon} /></span>{item.label}</>;
 
     if (item.external) {
         return <a href={item.href} target="_blank" rel="noopener noreferrer" onClick={onNavigate} className={className}>{content}</a>;

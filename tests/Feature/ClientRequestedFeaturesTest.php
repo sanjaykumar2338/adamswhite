@@ -135,7 +135,7 @@ class ClientRequestedFeaturesTest extends TestCase
         $this->get(route('circle.index'))->assertRedirect(route('login'));
         $this->actingAs($user)->get(route('circle.index'))->assertOk()->assertInertia(fn ($page) => $page
             ->component('Circle/Index')
-            ->where('circleUrl', 'https://circle.shiftrix.io'));
+            ->where('circleUrl', 'https://af.uppromote.com/ik9dny-b4/register'));
 
         $admin = User::factory()->create(['is_admin' => true]);
         $this->actingAs($admin)->get(route('circle.index'))->assertForbidden();

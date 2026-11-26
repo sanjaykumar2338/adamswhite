@@ -5,14 +5,14 @@ export default function AccountTypeCards({ value, onChange, error, t }) {
     ];
 
     return <fieldset>
-        <legend className="text-sm font-bold text-[#0B132B]">{t('account_type.label')}</legend>
+        <legend className="text-sm font-bold text-[#0B1120]">{t('account_type.label')}</legend>
         <p className="mt-1 text-xs leading-5 text-slate-500">{t('account_type.help')}</p>
         <div className="mt-2.5 grid auto-rows-fr gap-2.5 sm:grid-cols-2">
-            {options.map((option) => <label key={option.value} className={`relative flex min-h-20 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 pr-10 transition focus-within:ring-2 focus-within:ring-[#F4B942]/45 ${value === option.value ? 'border-[#F4B942] bg-amber-50/80 shadow-sm' : 'border-slate-200 bg-white hover:border-[#F4B942]/60'}`}>
+            {options.map((option) => <label key={option.value} className={`relative flex min-h-20 cursor-pointer items-center gap-3 rounded-[10px] border-2 p-3 pr-10 transition focus-within:ring-2 focus-within:ring-[#E6C87A]/45 ${value === option.value ? 'border-[#E6C87A] bg-[#FBF7EC] shadow-sm' : 'border-slate-200 bg-white hover:border-[#E6C87A]/60'}`}>
                 <input type="radio" name="account_type" value={option.value} checked={value === option.value} onChange={() => onChange(option.value)} className="sr-only" required />
-                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${value === option.value ? 'bg-[#0B132B] text-[#FFDC7A]' : 'bg-slate-100 text-slate-500'}`}><AccountTypeIcon type={option.icon} /></span>
-                <span className="min-w-0"><span className="block text-sm font-black leading-5 text-[#0B132B]">{t(`account_type.${option.value}`)}</span><span className="mt-0.5 block text-xs leading-4 text-slate-500">{t(`account_type.${option.value}_help`)}</span></span>
-                {value === option.value && <span className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-[#F4B942] text-[#0B132B]" aria-hidden="true"><CheckIcon /></span>}
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${value === option.value ? 'bg-[#0B1120] text-[#E6C87A]' : 'bg-slate-100 text-slate-500'}`}><AccountTypeIcon type={option.icon} /></span>
+                <span className="min-w-0"><span className="block text-sm font-black leading-5 text-[#0B1120]">{t(`account_type.${option.value}`)}</span><span className="mt-0.5 block text-xs leading-4 text-slate-500">{t(`account_type.${option.value}_help`)}</span></span>
+                {value === option.value && <span className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-[#E6C87A] text-[#0B1120]" aria-hidden="true"><CheckIcon /></span>}
             </label>)}
         </div>
         {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}

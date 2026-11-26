@@ -17,7 +17,7 @@ class CircleController extends Controller
         $circleUrl = filter_var($configuredUrl, FILTER_VALIDATE_URL)
             && parse_url($configuredUrl, PHP_URL_SCHEME) === 'https'
                 ? $configuredUrl
-                : 'https://circle.shiftrix.io';
+                : 'https://af.uppromote.com/ik9dny-b4/register';
 
         return Inertia::render('Circle/Index', ['circleUrl' => $circleUrl]);
     }

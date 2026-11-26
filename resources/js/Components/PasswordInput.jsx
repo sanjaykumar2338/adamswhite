@@ -7,7 +7,7 @@ export default function PasswordInput({ id, className = '', t, ...props }) {
 
     return <div className="relative">
         <TextInput {...props} id={id} name={id} type={visible ? 'text' : 'password'} className={`w-full pr-12 ${className}`} />
-        <button type="button" onClick={() => setVisible((current) => !current)} aria-label={label} aria-pressed={visible} className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-slate-400 hover:text-[#0B132B] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#F4B942]">
+        <button type="button" onClick={() => setVisible((current) => !current)} aria-label={label} aria-pressed={visible} className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-slate-400 hover:text-[#0B1120] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#E6C87A]">
             {visible ? <EyeSlashIcon /> : <EyeIcon />}
         </button>
     </div>;

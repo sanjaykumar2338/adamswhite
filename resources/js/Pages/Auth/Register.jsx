@@ -17,7 +17,7 @@ export default function Register() {
     return <GuestLayout wide>
         <Head title={t('auth.register')} />
         <p className="section-eyebrow">{t('auth.register_eyebrow')}</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-[#0B132B] sm:text-4xl">{t('auth.register')}</h1>
+        <h1 className="mt-2 text-3xl font-black tracking-tight text-[#0B1120] sm:text-4xl">{t('auth.register')}</h1>
         <p className="mt-3 text-sm leading-6 text-slate-500">{t('auth.register_intro')}</p>
         <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={(event) => { event.preventDefault(); form.post(route('register'), { onFinish: () => form.reset('password', 'password_confirmation') }); }}>
             <div className="sm:col-span-2"><AccountTypeCards value={form.data.account_type} onChange={(value) => form.setData('account_type', value)} error={form.errors.account_type} t={t} /></div>
@@ -26,7 +26,7 @@ export default function Register() {
             <div className="sm:col-span-2"><Field label={t('common.email')} id="email" error={form.errors.email}><TextInput id="email" type="email" autoComplete="username" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} className="mt-1.5 block w-full" required /></Field></div>
             <Field label={t('common.password')} id="password" error={form.errors.password}><PasswordInput id="password" autoComplete="new-password" value={form.data.password} onChange={(event) => form.setData('password', event.target.value)} className="mt-1.5" required t={t} /></Field>
             <Field label={t('common.confirm_password')} id="password_confirmation" error={form.errors.password_confirmation}><PasswordInput id="password_confirmation" autoComplete="new-password" value={form.data.password_confirmation} onChange={(event) => form.setData('password_confirmation', event.target.value)} className="mt-1.5" required t={t} /></Field>
-            <div className="sm:col-span-2 pt-1"><PrimaryButton className="w-full" disabled={form.processing}>{t('auth.register')}</PrimaryButton><p className="mt-4 text-center text-sm text-slate-500">{t('auth.already')} <Link href={route('login')} className="font-black text-[#0B132B] underline decoration-[#F4B942] decoration-2 underline-offset-4">{t('auth.login')}</Link></p></div>
+            <div className="sm:col-span-2 pt-1"><PrimaryButton className="w-full" disabled={form.processing}>{t('auth.register')}</PrimaryButton><p className="mt-4 text-center text-sm text-slate-500">{t('auth.already')} <Link href={route('login')} className="whitespace-nowrap font-semibold text-[#8F6D1E] underline decoration-[#E6C87A] decoration-2 underline-offset-4">{t('auth.login')}</Link></p></div>
         </form>
     </GuestLayout>;
 }

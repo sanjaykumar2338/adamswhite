@@ -8,9 +8,9 @@ const translationsPath = new URL('../../resources/js/i18n.js', import.meta.url);
 test('Circle menu opens the clean external portal in a secured new tab', async () => {
     const source = await readFile(layoutPath, 'utf8');
 
-    assert.match(source, /href: 'https:\/\/circle\.shiftrix\.io', active: false, icon: 'circle', external: true/);
+    assert.match(source, /href: 'https:\/\/af\.uppromote\.com\/ik9dny-b4\/register', active: false, icon: 'circle', external: true/);
     assert.match(source, /<a href=\{item\.href\} target="_blank" rel="noopener noreferrer"/);
-    assert.doesNotMatch(source, /circle\.shiftrix\.io[/?#]/);
+    assert.doesNotMatch(source, /[?&](email|id|customer)=/);
 });
 
 test('desktop and mobile sidebars share the Circle menu implementation', async () => {

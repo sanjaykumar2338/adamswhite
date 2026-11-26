@@ -2,9 +2,9 @@ import { useId } from 'react';
 
 export default function ApplicationLogo({ dark = false, className = '', ...props }) {
     const gradientId = useId().replaceAll(':', '');
-    const ink = dark ? '#FFFFFF' : '#0B132B';
+    const ink = dark ? '#FFFFFF' : '#0B1120';
 
-    return <span {...props} className={`inline-flex items-center gap-2 ${className}`} role="img" aria-label="Shiftrix Track" translate="no">
+    return <span {...props} className={`notranslate inline-flex items-center gap-2 ${className}`} role="img" aria-label="SHIFTRIX TRACK" translate="no">
         <svg className="h-full min-w-0 flex-1" viewBox="130 780 1750 440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMinYMid meet">
             <defs>
                 <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="293.8852" y1="800.17" x2="305.1476" y2="1116.6432">
@@ -28,6 +28,6 @@ export default function ApplicationLogo({ dark = false, className = '', ...props
             <path fill={dark ? '#FFFFFF' : `url(#${gradientId})`} d="M295.7 1048H155.2c-11.9 0-19.1-13.1-12.8-23.1l136.1-217.2c4.8-7.6 13.2-12.3 22.2-12.3h140.5c11.9 0 19.1 13.1 12.8 23.1l-136.1 217.2c-4.8 7.6-13.2 12.3-22.2 12.3Z" />
             {!dark && <path fill={`url(#${gradientId}shine)`} d="M441.2 795.4H300.7c-9 0-17.4 4.6-22.2 12.3l-97.9 156.2c29.9-1.8 62.2-7.4 95.1-17.2 64-19 117.3-50 150.4-83.8l27.9-44.5c6.3-9.9-1-23-12.8-23Z" />}
         </svg>
-        <span className={`shrink-0 border-l pl-2 text-[.56em] font-black leading-none tracking-[.14em] ${dark ? 'border-white/35 text-[#FFDC7A]' : 'border-[#0B132B]/25 text-[#9A6417]'}`}>TRACK</span>
+        <span className={`shrink-0 border-l pl-2 text-[.56em] font-black leading-none tracking-[.14em] ${dark ? 'border-white/35 text-[#E6C87A]' : 'border-[#0B1120]/25 text-[#8F6D1E]'}`}>TRACK</span>
     </span>;
 }

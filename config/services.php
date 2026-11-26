@@ -10,7 +10,7 @@ return [
         'tutorial_video_url' => env('SHIFTRIX_TUTORIAL_VIDEO_URL'),
         'scan_milestone_enabled' => env('SHIFTRIX_SCAN_MILESTONE_ENABLED', false),
         'scan_milestone_threshold' => (int) env('SHIFTRIX_SCAN_MILESTONE_THRESHOLD', 10),
-        'circle_url' => env('SHIFTRIX_CIRCLE_URL', 'https://circle.shiftrix.io'),
+        'circle_url' => env('SHIFTRIX_CIRCLE_URL', 'https://af.uppromote.com/ik9dny-b4/register'),
     ],
 
     'ipinfo_lite' => [
