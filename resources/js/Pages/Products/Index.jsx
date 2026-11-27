@@ -2,6 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useTranslation } from "@/i18n";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 import { createProductQrDownload } from "@/lib/productQr";
+import { validateGoogleReviewUrl } from "@/lib/reviewUrl";
 import { useState } from "react";
 
 export default function ProductsIndex({ products, filters, counts, locations }) {
@@ -217,6 +218,7 @@ function ProductCard({ product, locations, t }) {
             <form
                 onSubmit={(event) => {
                     event.preventDefault();
+                    if (!validateGoogleReviewUrl(form, t("validation.google_review_url"))) return;
                     form.patch(route("products.update", product.id), {
                         preserveScroll: true,
                     });

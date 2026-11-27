@@ -95,6 +95,8 @@ Object.assign(messages.en.products, { valid_link: 'Valid link', variant_card: 'C
 Object.assign(messages.fr.products, { valid_link: 'Lien valide', variant_card: 'CARD', variant_plate: 'PLAQUE', variant_stand: 'STAND', nfc_url: 'Lien NFC officiel', nfc_hint: "Il s’agit du lien officiel app.shiftrix.io encodé dans la puce NFC et dans les codes QR téléchargeables." });
 Object.assign(messages.fr.common, { email: 'Adresse e-mail' });
 Object.assign(messages.fr.track, { manual_help: "Vous pouvez saisir l’identifiant manuellement si le scan NFC ne l’a pas pré-rempli." });
+Object.assign(messages.en, { validation: { google_review_url: 'Enter a valid HTTPS Google Reviews URL.' } });
+Object.assign(messages.fr, { validation: { google_review_url: 'Saisissez une URL HTTPS Google Avis valide.' } });
 
 export function useTranslation() {
     const locale = usePage().props.locale === 'fr' ? 'fr' : 'en';

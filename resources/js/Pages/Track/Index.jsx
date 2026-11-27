@@ -4,6 +4,7 @@ import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import PublicFooter from '@/Components/PublicFooter';
 import { useTranslation } from '@/i18n';
 import { landingNavigation } from '@/lib/landingNavigation';
+import { validateGoogleReviewUrl } from '@/lib/reviewUrl';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -57,7 +58,7 @@ export default function Track({ code, invalid, product, customer, canActivate, n
                 {product && <div className="overflow-hidden rounded-2xl bg-white shadow-xl shadow-slate-200/70 lg:grid lg:grid-cols-[.9fr_1.1fr]">
                     <div className="relative min-h-72 bg-[#e9edf4]"><img src={product.image_url} alt={t('track.photo_alt', { variant: product.variant })} className="absolute inset-0 h-full w-full object-cover" /><span className="absolute left-5 top-5 rounded-full bg-[#0B1120]/90 px-4 py-2 text-xs font-bold tracking-wider text-white">{product.variant}</span></div>
                     <div className="p-6 sm:p-9"><p className="text-xs font-bold tracking-[.12em] text-[#8F6D1E]">{t('track.recognized')}</p><h2 className="notranslate product-code mt-3 text-3xl font-bold text-[#0B1120]" translate="no">{product.code_id}</h2>
-                        {!product.is_available ? <div className="mt-7 rounded-[10px] bg-slate-100 p-5 text-slate-700">{t('track.already_active')}</div> : canActivate ? <form className="mt-7 space-y-5" onSubmit={event => { event.preventDefault(); form.post(route('activations.store')); }}>
+                        {!product.is_available ? <div className="mt-7 rounded-[10px] bg-slate-100 p-5 text-slate-700">{t('track.already_active')}</div> : canActivate ? <form className="mt-7 space-y-5" onSubmit={event => { event.preventDefault(); if (validateGoogleReviewUrl(form, t('validation.google_review_url'))) form.post(route('activations.store')); }}>
                             <label className="block text-sm font-semibold text-slate-700">{t('track.business_details')}<input value={form.data.business_name} onChange={event => form.setData('business_name', event.target.value)} className="mt-2 w-full rounded-[10px] border-slate-300 px-4 py-3 focus:border-[#E6C87A] focus:ring-[#E6C87A]" required /></label><InputError message={form.errors.business_name} />
                             <label className="block text-sm font-semibold text-slate-700">{t('track.review_link')}<input type="url" value={form.data.google_review_url} onChange={event => form.setData('google_review_url', event.target.value)} className="mt-2 w-full rounded-[10px] border-slate-300 px-4 py-3 focus:border-[#E6C87A] focus:ring-[#E6C87A]" placeholder={t('track.review_placeholder')} required /></label><InputError message={form.errors.google_review_url} /><InputError message={form.errors.code_id} />
                             <button disabled={form.processing} className="gold-button w-full rounded-[10px] px-5 py-3.5 font-bold disabled:opacity-50">{t('track.activate')}</button>

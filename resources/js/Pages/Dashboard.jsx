@@ -3,6 +3,7 @@ import AnimatedNumber from "@/Components/AnimatedNumber";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useTranslation } from "@/i18n";
 import { dashboardWelcomeKey } from "@/lib/customerExperience";
+import { validateGoogleReviewUrl } from "@/lib/reviewUrl";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
@@ -276,6 +277,7 @@ function QuickProductCard({ products, t }) {
                     className="space-y-4"
                     onSubmit={(event) => {
                         event.preventDefault();
+                        if (!validateGoogleReviewUrl(form, t("validation.google_review_url"))) return;
                         form.patch(route("products.update", product.id), {
                             preserveScroll: true,
                         });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\SetLocale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,16 @@ class LocaleController extends Controller
             $request->user()->forceFill(['preferred_locale' => $locale])->saveQuietly();
         }
 
-        return back();
+        return back()->withCookie(cookie(
+            SetLocale::COOKIE,
+            $locale,
+            60 * 24 * 365 * 5,
+            '/',
+            null,
+            $request->isSecure(),
+            true,
+            false,
+            'lax',
+        ));
     }
 }

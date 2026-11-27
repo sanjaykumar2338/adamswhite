@@ -10,7 +10,7 @@ export default function LanguageSwitcher({ dark = false, onBeforeChange }) {
         {['en', 'fr'].map(option => <button key={option} type="button" onClick={() => {
             if (option === locale) return;
             onBeforeChange?.();
-            router.post(route('locale.update', option), {}, { preserveScroll: true });
+            router.post(route('locale.update', option), {}, { preserveScroll: true, preserveState: false });
         }} aria-pressed={locale === option} className={`rounded-full px-2.5 py-1.5 transition sm:px-3 ${locale === option ? 'bg-[#E6C87A] text-[#0B1120]' : ''}`}>{option.toUpperCase()}</button>)}
     </div>;
 }

@@ -66,4 +66,46 @@ class ActivationFlowTest extends TestCase
         $this->actingAs($user)->post('/activations', ['code_id' => 'CARD-00001', 'business_name' => 'One', 'google_review_url' => 'https://google.com.evil.example/review'])->assertSessionHasErrors('google_review_url');
         $this->assertDatabaseHas('products', ['code_id' => 'CARD-00001', 'status' => 'unclaimed']);
     }
+
+    public function test_english_activation_accepts_a_supported_google_maps_link(): void
+    {
+        $user = User::factory()->create(['preferred_locale' => 'en']);
+        $customer = Customer::create(['business_name' => 'English Cafe', 'max_products' => 10]);
+        $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
+        $product = $this->product();
+        $url = 'https://www.google.com/maps/place/English+Cafe/@51.5,-0.1,17z';
+
+        $this->actingAs($user)->post('/activations', [
+            'code_id' => $product->code_id,
+            'business_name' => 'English Cafe',
+            'google_review_url' => $url,
+        ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'google_review_url' => $url]);
+    }
+
+    public function test_french_activation_accepts_a_direct_review_link_and_localizes_rejections(): void
+    {
+        $user = User::factory()->create(['preferred_locale' => 'fr']);
+        $customer = Customer::create(['business_name' => 'Café Français', 'max_products' => 10]);
+        $customer->users()->attach($user->id, ['role' => 'owner', 'status' => 'active']);
+        $product = $this->product();
+
+        $this->actingAs($user)->post('/activations', [
+            'code_id' => $product->code_id,
+            'business_name' => 'Café Français',
+            'google_review_url' => 'https://app.shiftrix.io/?id='.$product->code_id,
+        ])->assertSessionHasErrors([
+            'google_review_url' => 'Saisissez une URL HTTPS Google Avis valide.',
+        ]);
+
+        $url = 'https://search.google.fr/local/writereview?placeid=ChIJ123';
+        $this->actingAs($user)->post('/activations', [
+            'code_id' => $product->code_id,
+            'business_name' => 'Café Français',
+            'google_review_url' => $url,
+        ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'google_review_url' => $url]);
+    }
 }
