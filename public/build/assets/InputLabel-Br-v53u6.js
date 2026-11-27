@@ -1,1 +1,0 @@
-import{j as n}from"./app-CIL9QRfF.js";function l({value:t,className:e="",children:o,...s}){return n.jsx("label",{...s,className:"block text-sm font-bold text-[#0B1120] "+e,children:t||o})}export{l as I};

@@ -97,6 +97,10 @@ Object.assign(messages.fr.common, { email: 'Adresse e-mail' });
 Object.assign(messages.fr.track, { manual_help: "Vous pouvez saisir l’identifiant manuellement si le scan NFC ne l’a pas pré-rempli." });
 Object.assign(messages.en, { validation: { google_review_url: 'Enter a valid HTTPS Google Reviews URL.' } });
 Object.assign(messages.fr, { validation: { google_review_url: 'Saisissez une URL HTTPS Google Avis valide.' } });
+Object.assign(messages.en.track, { review_url_help: 'Paste the Google review link for your business from Google Business Profile. Your SHIFTRIX product link is not a review destination.' });
+Object.assign(messages.fr.track, { review_url_help: 'Collez le lien vers les avis de votre établissement depuis votre fiche d’établissement Google. Le lien de votre produit SHIFTRIX n’est pas une destination d’avis.' });
+Object.assign(messages.en.validation, { shiftrix_product_url: 'This is a SHIFTRIX product link. Paste your business’s Google review link here instead.' });
+Object.assign(messages.fr.validation, { shiftrix_product_url: 'Ceci est un lien de produit SHIFTRIX. Collez plutôt ici le lien Google Avis de votre établissement.' });
 
 export function useTranslation() {
     const locale = usePage().props.locale === 'fr' ? 'fr' : 'en';

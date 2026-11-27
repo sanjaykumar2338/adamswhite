@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isValidGoogleReviewUrl } from '../../resources/js/lib/reviewUrl.js';
+import { isShiftrixProductUrl, isValidGoogleReviewUrl } from '../../resources/js/lib/reviewUrl.js';
 
 test('accepts supported Google Maps and Google Reviews URL formats', () => {
     const urls = [
@@ -31,4 +31,10 @@ test('rejects non-Google, SHIFTRIX, deceptive and unsafe URLs', () => {
     ];
 
     for (const url of urls) assert.equal(isValidGoogleReviewUrl(url), false, url);
+});
+
+test('identifies the mistaken SHIFTRIX product link for a specific error', () => {
+    assert.equal(isShiftrixProductUrl('https://app.shiftrix.io/?id=CARD-10010'), true);
+    assert.equal(isShiftrixProductUrl('https://g.page/r/example/review'), false);
+    assert.equal(isShiftrixProductUrl('https://app.shiftrix.io.evil.example/?id=CARD-10010'), false);
 });

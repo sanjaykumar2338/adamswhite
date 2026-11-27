@@ -42,12 +42,21 @@ export function isValidGoogleReviewUrl(value) {
     return /^\/(?:maps(?:\/|$)|local\/writereview\/?$)/i.test(path);
 }
 
-export function validateGoogleReviewUrl(form, message) {
+export function isShiftrixProductUrl(value) {
+    try {
+        const url = new URL(value);
+        return url.hostname.toLowerCase() === 'app.shiftrix.io' && url.searchParams.has('id');
+    } catch {
+        return false;
+    }
+}
+
+export function validateGoogleReviewUrl(form, message, productUrlMessage = message) {
     if (isValidGoogleReviewUrl(form.data.google_review_url)) {
         form.clearErrors('google_review_url');
         return true;
     }
 
-    form.setError('google_review_url', message);
+    form.setError('google_review_url', isShiftrixProductUrl(form.data.google_review_url) ? productUrlMessage : message);
     return false;
 }

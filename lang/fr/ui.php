@@ -3,6 +3,7 @@
 return [
     'validation' => [
         'google_review_url' => 'Saisissez une URL HTTPS Google Avis valide.',
+        'shiftrix_product_url' => 'Ceci est un lien de produit SHIFTRIX. Collez plutôt ici le lien Google Avis de votre établissement.',
         'already_claimed' => 'Ce produit a déjà été activé.',
         'product_limit' => 'Votre compte a atteint sa limite de produits.',
         'already_member' => "Cette personne dispose déjà d'un accès actif à l'organisation.",

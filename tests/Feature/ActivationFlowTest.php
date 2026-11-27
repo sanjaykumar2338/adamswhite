@@ -96,7 +96,7 @@ class ActivationFlowTest extends TestCase
             'business_name' => 'Café Français',
             'google_review_url' => 'https://app.shiftrix.io/?id='.$product->code_id,
         ])->assertSessionHasErrors([
-            'google_review_url' => 'Saisissez une URL HTTPS Google Avis valide.',
+            'google_review_url' => 'Ceci est un lien de produit SHIFTRIX. Collez plutôt ici le lien Google Avis de votre établissement.',
         ]);
 
         $url = 'https://search.google.fr/local/writereview?placeid=ChIJ123';

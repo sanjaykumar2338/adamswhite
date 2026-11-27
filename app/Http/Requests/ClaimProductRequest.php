@@ -31,7 +31,9 @@ class ClaimProductRequest extends FormRequest
                 'required', 'string', 'max:2048',
                 function (string $attribute, mixed $value, Closure $fail): void {
                     if (! app(ReviewUrlValidator::class)->isValid($value)) {
-                        $fail(__('ui.validation.google_review_url'));
+                        $fail(__(app(ReviewUrlValidator::class)->isShiftrixProductUrl($value)
+                            ? 'ui.validation.shiftrix_product_url'
+                            : 'ui.validation.google_review_url'));
                     }
                 },
             ],

@@ -4,6 +4,18 @@ namespace App\Services;
 
 class ReviewUrlValidator
 {
+    public function isShiftrixProductUrl(?string $url): bool
+    {
+        if (! is_string($url) || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        $parts = parse_url($url);
+
+        return strtolower($parts['host'] ?? '') === 'app.shiftrix.io'
+            && str_contains($parts['query'] ?? '', 'id=');
+    }
+
     public function isValid(?string $url): bool
     {
         if (! is_string($url) || filter_var($url, FILTER_VALIDATE_URL) === false) {
